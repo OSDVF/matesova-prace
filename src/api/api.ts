@@ -1,6 +1,6 @@
 import CAPI from "renette-api";
 import { receivedData } from "renette-api/dist/types"
-import { futureEvent, futureEventInData } from "./api.types";
+import { application, futureEvent, futureEventInData } from "./api.types";
 
 const API = new CAPI();
 API.setConfig({
@@ -17,7 +17,7 @@ export default class ApiLayer {
         }));
         return this.lastRequest;
     }
-    static async getApplicationsTable(eventId: Number) {
+    static async getApplicationsTable(eventId: Number): Promise<receivedData<{ applications: application[] }>> {
         await this.lastRequest;
         return (this.lastRequest = API.post({
             resource: 'get',

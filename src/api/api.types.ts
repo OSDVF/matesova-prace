@@ -11,6 +11,42 @@ export type futureEvent = {
     desc: string
 };
 
+export enum Meal {
+    VECERE, SNIDANE, OBED
+}
+
+export enum ApplicationState {
+    new, confirmed, waiting, paid, free, cancelled
+}
+
+export type application = {
+    name: string,
+    sname: string,
+    age: number,
+    email: string,
+    phone: string,
+    town: string,
+    music_instrument: string,
+    firsttime: string,
+    firsttime_note: string,
+    note_health: string,
+    note_food: string,
+    note: string,
+    wholeevent: string,
+    group: number,
+    arrival: Date,
+    first_meal: Meal,
+    departure: Date,
+    last_meal: Meal,
+    extras: string,
+    state: ApplicationState,
+    night_price: number,
+    price: number,
+    note_internal:string,
+    appdate: Date,
+    extras_price: number | null
+};
+
 export type futureEventInData = {
     events: futureEvent[]
 };

@@ -1,12 +1,13 @@
-import { Router, Route } from 'preact-router';
+import { Route } from 'preact-router';
+
 import { render } from 'preact';
-import './styles/index.css'
 import { Home } from './pages/home';
+import { SubfolderRouter } from './SubFolderRouter';
 
 const Main = () => (
-    <Router>
+    <SubfolderRouter>
         <Route path="/" component={Home} />
-    </Router>
+    </SubfolderRouter>
 );
 
 render(<Main />, document.getElementById('app') as HTMLElement)

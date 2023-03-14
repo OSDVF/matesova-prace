@@ -1,30 +1,32 @@
-import { FunctionComponent } from 'preact'
+import '../styles/table.scss'
 
-type Field = {
+export type TableField = {
     text: string;
     class: string;
 };
 
-type Props = {
-    fields: Array<Field>;
-    data: Array<Array<string>>
+type Props<T> = {
+    fields: Array<TableField>;
+    data: T[]
 };
 
 
-export function Table({ data, fields }: Props) {
+export function Table<T>({ data, fields }: Props<T>) {
     return <table>
         <thead>
             <tr>
                 {fields.map((field) => {
-                    <th class={field.class}>{field.text}</th>
+                    return <th class={field.class}>{field.text}</th>
                 })}
             </tr>
         </thead>
         <tbody>
             {data.map((row) => {
-                row.map((item) => {
-                    <td>{item}</td>
-                })
+                const items: preact.JSX.Element[] = [];
+                for (let property in row) {
+                    items.push(<td>{row[property]!}</td>);
+                }
+                return <tr>{items}</tr>;
             })}
         </tbody>
     </table>
