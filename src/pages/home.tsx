@@ -163,3 +163,15 @@ export class Home extends Component<Props, State> {
 }
 
 register(Home, 'x-matesova-prace', ['eventID'], { shadow: true });
+
+function initLogin() {
+  LoginHandler.initLogin();
+  window.removeEventListener('load', initLogin);
+}
+
+if (document.readyState === "complete") {
+  initLogin();
+}
+else {
+  window.addEventListener('load', initLogin);
+}
