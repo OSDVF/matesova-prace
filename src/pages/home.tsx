@@ -14,6 +14,8 @@ import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/tracing';
 import '../plugins/polyfills.js'
 import '../styles/home.scss'
+import { Legend } from '../components/Legend';
+import { JSXInternal } from 'preact/src/jsx';
 
 if (import.meta.env.PROD) {
   Sentry.init({
@@ -41,6 +43,8 @@ type State = {
 };
 
 export class Home extends Component<Props, State> {
+  private handler: JSXInternal.Element;
+
   constructor(props: Props) {
     super(props);
 
@@ -52,6 +56,12 @@ export class Home extends Component<Props, State> {
       loggedIn: false
     };
 
+    this.handler = <LoginHandler
+      allowedDomain='travna.cz'
+      logInPromptText='Log in firstly using your @travna account'
+      onLoggedIn={() => this.setState({ loggedIn: true })}
+    />
+
     ApiLayer.auth().catch((e) => this.showError(e));
 
     ApiLayer.getEvents().then(ev => {
@@ -60,18 +70,6 @@ export class Home extends Component<Props, State> {
         selectedEventID: this.state.selectedEventID ?? ev.data.events.length == 1 ? ev.data.events[0].eventID : null
       });
     });
-  }
-  getSelectedEvent() {
-    let returned = null;
-    for (let event of this.state.events) {
-      if (event.eventID == this.state.selectedEventID) {
-        returned = event;
-      }
-    }
-    if (this.state.selectedEventID != null && this.state.applications == null) {
-      this.fetchApplications();
-    }
-    return returned;
   }
   async fetchApplications() {
     try {
@@ -103,12 +101,6 @@ export class Home extends Component<Props, State> {
     })
     Sentry.captureException(e);
   }
-  toLocalDate(dateString: string | undefined) {
-    if (!dateString) {
-      return '';
-    }
-    return (new Date(dateString).toLocaleString());
-  }
   render() {
     const [error, resetError] = useErrorBoundary(error => {
       Sentry.captureException(error);
@@ -125,38 +117,29 @@ export class Home extends Component<Props, State> {
       );
     }
 
-    const handler = <LoginHandler
-      allowedDomain='travna.cz'
-      logInPromptText='Log in firstly using your @travna account'
-      onLoggedIn={() => this.setState({ loggedIn: true })}
-    />
+    if (this.state.selectedEventID != null && this.state.applications == null) {
+      this.fetchApplications();
+    }
 
     if (!this.state.loggedIn) {
-      return <div>{handler}</div>;
+      return <div>{this.handler}</div>;
     }
 
     return (
       <>
-        <div className="legend">
-          <label>
-            Selected event:
-            <select onChange={linkState(this, 'selectedEventID')}>
-              {this.state.events.map(event => {
-                return <option value={event.eventID}>{event.title}</option>
-              })}
-            </select>
-          </label>
-          <label className="info">Applications from: <span>{this.toLocalDate(this.getSelectedEvent()?.appBegin)}</span></label>
-          <label className="info">To: <span>{this.toLocalDate(this.getSelectedEvent()?.appEnd)}</span></label>
-          {handler}
-        </div>
-
-        {this.state.errorMessage != null ?
-          <output className="text-error">
-            {this.state.errorMessage}
-          </output> : ''
+        <Legend
+          events={this.state.events}
+          onSelectEvent={linkState(this, 'selectedEventID')}
+          selectedEventID={this.state.selectedEventID}
+          loginHandler={this.handler}
+        />
+        {
+          this.state.errorMessage != null ?
+            <output className="text-error">
+              {this.state.errorMessage}
+            </output> : ''
         }
-        <Table data={this.state.applications ?? []} fields={fields} />
+        <Table data={this.state.applications ?? []} fields={fields} showIndexColumn={true} />
       </>
     )
   }
