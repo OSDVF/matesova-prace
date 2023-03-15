@@ -15,8 +15,7 @@ import { BrowserTracing } from '@sentry/tracing';
 import '../plugins/polyfills.js'
 import '../styles/home.scss'
 
-if(import.meta.env.PROD)
-{
+if (import.meta.env.PROD) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     integrations: [new BrowserTracing(), new Sentry.Replay()],
@@ -37,7 +36,8 @@ type State = {
   events: futureEvent[],
   selectedEventID: number | null
   applications: application[] | null,
-  errorMessage: string | null
+  errorMessage: string | null,
+  loggedIn: boolean
 };
 
 export class Home extends Component<Props, State> {
@@ -48,7 +48,8 @@ export class Home extends Component<Props, State> {
       events: [],
       selectedEventID: this.props.eventID,
       applications: null,
-      errorMessage: null
+      errorMessage: null,
+      loggedIn: false
     };
 
     ApiLayer.auth().catch((e) => this.showError(e));
@@ -123,6 +124,17 @@ export class Home extends Component<Props, State> {
         </Fragment>
       );
     }
+
+    const handler = <LoginHandler
+      allowedDomain='travna.cz'
+      logInPromptText='Log in firstly using your @travna account'
+      onLoggedIn={() => this.setState({ loggedIn: true })}
+    />
+
+    if (!this.state.loggedIn) {
+      return <div>{handler}</div>;
+    }
+
     return (
       <>
         <div className="legend">
@@ -136,7 +148,7 @@ export class Home extends Component<Props, State> {
           </label>
           <label className="info">Applications from: <span>{this.toLocalDate(this.getSelectedEvent()?.appBegin)}</span></label>
           <label className="info">To: <span>{this.toLocalDate(this.getSelectedEvent()?.appEnd)}</span></label>
-          <LoginHandler />
+          {handler}
         </div>
 
         {this.state.errorMessage != null ?
