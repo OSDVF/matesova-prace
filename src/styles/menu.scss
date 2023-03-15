@@ -1,0 +1,41 @@
+@use "sass:color";
+
+.menu {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    display: inline-block;
+    margin: 5px;
+    padding: 0;
+    background: #FFF;
+    border-radius: 3px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    transform-origin: 0 0;
+    animation: in forwards 250ms ease;
+    cursor: pointer;
+}
+
+@keyframes in {
+    from {
+        opacity: 0;
+        transform: scale(0.01);
+    }
+}
+
+$hoverColor: #DDD;
+
+.menu li {
+    padding: 5px 40px 5px 20px;
+    color: #555;
+    list-style: none;
+
+    &:hover,
+    &:focus {
+        background: $hoverColor;
+
+        &:active {
+            background-color: darken($hoverColor, $amount: 5%);
+        }
+    }
+}

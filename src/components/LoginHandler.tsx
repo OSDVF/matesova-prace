@@ -1,10 +1,13 @@
 import { CredentialResponse } from "google-one-tap";
 import { Component, ComponentChild } from "preact";
+import { createPortal } from 'preact/compat';
 import jwt_decode from "jwt-decode";
 import localforage from 'localforage'
 import * as Sentry from '@sentry/react'
 
+
 import '../styles/icons.css'
+import { Menu } from "./Menu";
 
 const CREDENTIAL_STORE_KEY = 'cred';
 
@@ -15,14 +18,18 @@ type GoogleUser = {
 }
 
 type State = {
-    currentUser: GoogleUser | null,
-    domainError: boolean
+    domainError: boolean,
+    toggleState: boolean,
+    lastClick: {
+        left: number,
+        top: number
+    }
 }
 
 type Props = {
     onLoggedIn: () => void,
     logInPromptText: string,
-    allowedDomain: string
+    allowedDomain: string,
 }
 
 let storedCredentialExists = false;
@@ -36,8 +43,12 @@ export class LoginHandler extends Component<Props, State> {
     constructor(props?: Props) {
         super(props);
         this.state = {
-            currentUser: null,
-            domainError: false
+            domainError: false,
+            toggleState: false,
+            lastClick: {
+                left: 0,
+                top: 0
+            }
         }
     }
 
@@ -54,29 +65,50 @@ export class LoginHandler extends Component<Props, State> {
             </div>;
         }
 
-        if (!state.currentUser) {
+        if (!LoginHandler.currentUser) {
             return <div>
                 <div id="googleSignIn"></div>
                 {props.logInPromptText}
             </div>;
         }
 
-        return <div class="user">
+        return <button class="user" onClick={
+            event => this.setState({
+                toggleState: !state.toggleState,
+                lastClick: {
+                    left: event.pageX,
+                    top: event.pageY
+                }
+            })}>
             <i class="gg-user"></i>&ensp;
-            {state.currentUser?.given_name} {state.currentUser?.family_name ?? 'Login error'}
+            {LoginHandler.currentUser?.given_name} {LoginHandler.currentUser?.family_name ?? 'Login error'}
             <br />
-            <small>{state.currentUser?.email}</small>
-        </div>
+            <small>{LoginHandler.currentUser?.email}</small>
+
+            {state.toggleState ? createPortal(
+                <Menu {...state.lastClick} items={[{
+                    text: 'Log Out',
+                    onClick: (e) => {
+                        this.setState({
+                            toggleState: false
+                        });
+                        LoginHandler.deleteCredential();
+                        LoginHandler.currentUser = null;
+                    }
+                }]} />,
+                document.body) : ''}
+        </button>
     }
 
-    static instance: LoginHandler;
+    static instance: LoginHandler | null;
+    static currentUser: GoogleUser | null;
     static loginCallback(response: CredentialResponse) {
         const decoded = jwt_decode(response.credential) as GoogleUser;
-        LoginHandler.instance.setState({
-            currentUser: decoded,
+        LoginHandler.currentUser = decoded;
+        LoginHandler.instance?.setState({
             domainError: false
         });
-        LoginHandler.instance.props.onLoggedIn();
+        LoginHandler.instance?.props.onLoggedIn();
         LoginHandler.storeCredential(response);
     }
     static storeCredential(response: CredentialResponse) {

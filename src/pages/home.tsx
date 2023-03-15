@@ -133,6 +133,9 @@ export class Home extends Component<Props, State> {
           selectedEventID={this.state.selectedEventID}
           loginHandler={this.handler}
         />
+        <div className="legend">
+          <strong>Statistics</strong><label className="info">People count: <span>{this.state.applications?.length}</span></label>
+        </div>
         {
           this.state.errorMessage != null ?
             <output className="text-error">
