@@ -1,122 +1,43 @@
-import { useState } from 'preact/hooks'
+import register from 'preact-custom-element';
 import linkState from 'linkstate';
-import '../styles/home.scss'
-import { Component, FunctionComponent } from 'preact'
+import { Component, Fragment } from 'preact'
+import { useErrorBoundary } from "preact/hooks";
+
 import ApiLayer from '../api/api'
+import { receivedData } from 'renette-api/dist/types';
 import { application, futureEvent } from '../api/api.types'
-import { Table, TableField } from '../components/table';
+import { Table } from '../components/table';
+import { fields } from './home.types';
+
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
+import '../plugins/polyfills.js'
+import '../styles/home.scss'
+
+if(import.meta.env.PROD)
+{
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    integrations: [new BrowserTracing(), new Sentry.Replay()],
+    tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
+    // This sets the sample rate to be 10%. You may want this to be 100% while
+    // in development and sample at a lower rate in production
+    replaysSessionSampleRate: import.meta.env.PROD ? 0.1 : 0.5,
+    // If the entire session is not sampled, use the below sample rate to sample
+    // sessions when an error occurs.
+    replaysOnErrorSampleRate: import.meta.env.PROD ? 0.8 : 1.0,
+  });
+}
 
 type Props = {
-  selectedEventID: number
+  eventID: number | null
 };
 type State = {
   events: futureEvent[],
   selectedEventID: number | null
-  applications: application[] | null
+  applications: application[] | null,
+  errorMessage: string | null
 };
-
-const fields: TableField[] = [
-  {
-    class: "",
-    text: 'Jméno'
-  },
-  {
-    class: "",
-    text: 'Příjmení'
-  },
-  {
-    class: "",
-    text: 'Věk'
-  },
-  {
-    class: "",
-    text: 'Email'
-  },
-  {
-    class: "",
-    text: 'Telefon'
-  },
-  {
-    class: "",
-    text: 'Město'
-  },
-  {
-    class: "",
-    text: 'Hudební nástroj'
-  },
-  {
-    class: "",
-    text: 'Poprvé'
-  },
-  {
-    class: "",
-    text: 'Kdo pozval'
-  },
-  {
-    class: "",
-    text: 'Zdravotní omezení'
-  },
-  {
-    class: "",
-    text: 'Jídelní omezení'
-  },
-  {
-    class: "",
-    text: 'Poznámka'
-  },
-  {
-    class: "",
-    text: '_'
-  },
-  {
-    class: "",
-    text: 'Kategorie'
-  },
-  {
-    class: "",
-    text: 'Příjezd'
-  },
-  {
-    class: "",
-    text: 'První jídlo'
-  },
-  {
-    class: "",
-    text: 'Odjezd'
-  },
-  {
-    class: "",
-    text: 'Poslední'
-  },
-  {
-    class: "",
-    text: 'Zakoupené bonusy'
-  },
-  {
-    class: "",
-    text: 'Stav přihášky'
-  },
-  {
-    class: "",
-    text: 'Cena za noc'
-  },
-  {
-    class: "",
-    text: 'Cena'
-  },
-  {
-    class: "",
-    text: 'Interní poznámka'
-  },
-  {
-    class: "",
-    text: 'Datum přihlášení'
-  },
-  {
-    class: "",
-    text: 'Cena za bonusy'
-  },
-];
 
 export class Home extends Component<Props, State> {
   constructor(props: Props) {
@@ -124,9 +45,12 @@ export class Home extends Component<Props, State> {
 
     this.state = {
       events: [],
-      selectedEventID: null,
-      applications: null
+      selectedEventID: this.props.eventID,
+      applications: null,
+      errorMessage: null
     };
+
+    ApiLayer.auth().catch((e) => this.showError(e));
 
     ApiLayer.getEvents().then(ev => {
       this.setState({
@@ -148,10 +72,34 @@ export class Home extends Component<Props, State> {
     return returned;
   }
   async fetchApplications() {
-    const resp = await ApiLayer.getApplicationsTable(this.state.selectedEventID!);
+    try {
+      const resp = await ApiLayer.getApplicationsTable(this.state.selectedEventID!);
+      if (resp.data.applications) {
+        this.setState({
+          applications: resp.data.applications
+        })
+      }
+      else {
+        this.setState({
+          errorMessage: this.makeErrorMessage(resp)
+        })
+      }
+    }
+    catch (e) {
+      this.showError(e);
+    }
+  }
+  makeErrorMessage(response: receivedData<any>): string {
+    Sentry.captureEvent({
+      extra: response
+    });
+    return `Error (code ${response.code}) while performing ${response.action}: ${JSON.stringify(response.data)}`;
+  }
+  showError(e: any) {
     this.setState({
-      applications: resp.data.applications
+      errorMessage: `Failed to fetch data. Details: ${JSON.stringify(e)}`
     })
+    Sentry.captureException(e);
   }
   toLocalDate(dateString: string | undefined) {
     if (!dateString) {
@@ -160,6 +108,20 @@ export class Home extends Component<Props, State> {
     return (new Date(dateString).toLocaleString());
   }
   render() {
+    const [error, resetError] = useErrorBoundary(error => {
+      Sentry.captureException(error);
+    });
+
+    if (error) {
+      return (
+        <Fragment>
+          <h1>Error</h1>
+          <p>An error occurred.</p>
+          <small>Reason: {error.message}</small>
+          <button onClick={resetError}>Try again</button>
+        </Fragment>
+      );
+    }
     return (
       <>
         <div className="legend">
@@ -174,8 +136,16 @@ export class Home extends Component<Props, State> {
           <label className="info">Applications from: <span>{this.toLocalDate(this.getSelectedEvent()?.appBegin)}</span></label>
           <label className="info">To: <span>{this.toLocalDate(this.getSelectedEvent()?.appEnd)}</span></label>
         </div>
+
+        {this.state.errorMessage != null ?
+          <output className="text-error">
+            {this.state.errorMessage}
+          </output> : ''
+        }
         <Table data={this.state.applications ?? []} fields={fields} />
       </>
     )
   }
 }
+
+register(Home, 'x-matesova-prace', ['eventID'], { shadow: true });

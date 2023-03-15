@@ -2,7 +2,7 @@ import { Route } from 'preact-router';
 
 import { render } from 'preact';
 import { Home } from './pages/home';
-import { SubfolderRouter } from './SubFolderRouter';
+import { SubfolderRouter } from './components/SubFolderRouter';
 
 const Main = () => (
     <SubfolderRouter>

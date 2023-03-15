@@ -37,5 +37,3 @@ export default class ApiLayer {
         ));
     }
 };
-
-ApiLayer.auth();
