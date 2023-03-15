@@ -1,3 +1,10 @@
+@media (prefers-color-scheme: dark) {
+    :root {
+        filter: invert(100%);
+        background: white;
+    }
+}
+
 .legend {
     display: flex;
     flex-wrap: wrap;
