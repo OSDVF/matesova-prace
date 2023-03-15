@@ -5,6 +5,7 @@ table {
 
     td {
         border: 1px solid $halfGray;
+        text-overflow: ellipsis
     }
 
     tr:nth-child(even) {
@@ -19,5 +20,34 @@ table {
         position: sticky;
         top:0;
         background: rgb(192, 192, 192);
+    }
+
+    &.truncate {
+        $openCell: 50vh;
+        $closedCell: 10vh;
+
+        td {
+            overflow: hidden;
+            &>div {
+                overflow: hidden;
+                max-height: $closedCell;
+            }
+
+            &:focus {
+                $shadow: 0px 0px 4px 0px #e7a61a;
+                box-shadow: $shadow, $shadow inset;
+
+                &>div {
+                    max-height: $openCell;
+                    overflow: auto;
+                }
+            }
+        }
+
+        tr:focus-within {
+            &>td>div {
+                overflow: visible;
+            }
+        }
     }
 }

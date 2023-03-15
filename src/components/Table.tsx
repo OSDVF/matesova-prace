@@ -8,12 +8,13 @@ export type TableField = {
 type Props<T> = {
     fields: Array<TableField>;
     data: T[],
-    showIndexColumn: boolean
+    showIndexColumn: boolean,
+    className: string
 };
 
 
-export function Table<T>({ data, fields, showIndexColumn = false }: Props<T>) {
-    return <table>
+export function Table<T>({ data, fields, showIndexColumn = false, className }: Props<T>) {
+    return <table className={className}>
         <thead>
             <tr>
                 {showIndexColumn ?
@@ -32,7 +33,7 @@ export function Table<T>({ data, fields, showIndexColumn = false }: Props<T>) {
                     items.push(<td>{index + 1}</td>);
                 }
                 for (let property in row) {
-                    items.push(<td>{row[property]!}</td>);
+                    items.push(<td tabIndex={0}><div>{row[property]!}</div></td>);
                 }
                 return <tr>{items}</tr>;
             })}

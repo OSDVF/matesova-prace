@@ -16,6 +16,7 @@ import '../plugins/polyfills.js'
 import '../styles/home.scss'
 import { Legend } from '../components/Legend';
 import { JSXInternal } from 'preact/src/jsx';
+import classNames from 'classnames';
 
 if (import.meta.env.PROD) {
   Sentry.init({
@@ -39,7 +40,8 @@ type State = {
   selectedEventID: number | null
   applications: application[] | null,
   errorMessage: string | null,
-  loggedIn: boolean
+  loggedIn: boolean,
+  truncateCells: boolean
 };
 
 export class Home extends Component<Props, State> {
@@ -53,7 +55,8 @@ export class Home extends Component<Props, State> {
       selectedEventID: this.props.eventID,
       applications: null,
       errorMessage: null,
-      loggedIn: false
+      loggedIn: false,
+      truncateCells: true
     };
 
     this.handler = <LoginHandler
@@ -135,6 +138,7 @@ export class Home extends Component<Props, State> {
         />
         <div className="legend">
           <strong>Statistics</strong><label className="info">People count: <span>{this.state.applications?.length}</span></label>
+          <label className="info">Wrap text: <input type="checkbox" checked={!this.state.truncateCells} onChange={() => this.setState({ truncateCells: !this.state.truncateCells })} /></label>
         </div>
         {
           this.state.errorMessage != null ?
@@ -142,7 +146,15 @@ export class Home extends Component<Props, State> {
               {this.state.errorMessage}
             </output> : ''
         }
-        <Table data={this.state.applications ?? []} fields={fields} showIndexColumn={true} />
+        <Table
+          className={
+            classNames({
+              truncate: this.state.truncateCells
+            })
+          }
+          data={this.state.applications ?? []}
+          fields={fields}
+          showIndexColumn={true} />
       </>
     )
   }
