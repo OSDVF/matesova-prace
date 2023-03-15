@@ -41,7 +41,10 @@ export class LoginHandler extends Component<Props, State> {
         }
 
         if (!state.currentUser) {
-            return props.logInPromptText;
+            return <div>
+                <div id="googleSignIn"></div>
+                {props.logInPromptText}
+            </div>;
         }
 
         return <div class="user">
@@ -75,8 +78,19 @@ export class LoginHandler extends Component<Props, State> {
 function initLogin() {
     google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_ID,
-        callback: LoginHandler.callback
+        callback: LoginHandler.callback,
+        cancel_on_tap_outside: false,
+        ux_mode: "popup",
+        state_cookie_domain: import.meta.env.VITE_DOMAIN,
+        allowed_parent_origin: import.meta.env.VITE_DOMAIN_GLOB,
+        itp_support: true
     });
+    const button = document.getElementById('googleSignIn');
+    if (button) {
+        google.accounts.id.renderButton(button, {
+            text: 'signin',
+        });
+    }
     google.accounts.id.prompt();
     window.removeEventListener('load', initLogin);
 }
