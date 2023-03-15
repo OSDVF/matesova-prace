@@ -6,7 +6,8 @@ import { useErrorBoundary } from "preact/hooks";
 import ApiLayer from '../api/api'
 import { receivedData } from 'renette-api/dist/types';
 import { application, futureEvent } from '../api/api.types'
-import { Table } from '../components/table';
+import { Table } from '../components/Table';
+import { LoginHandler } from '../components/LoginHandler';
 import { fields } from './home.types';
 
 import * as Sentry from '@sentry/react';
@@ -135,6 +136,7 @@ export class Home extends Component<Props, State> {
           </label>
           <label className="info">Applications from: <span>{this.toLocalDate(this.getSelectedEvent()?.appBegin)}</span></label>
           <label className="info">To: <span>{this.toLocalDate(this.getSelectedEvent()?.appEnd)}</span></label>
+          <LoginHandler />
         </div>
 
         {this.state.errorMessage != null ?

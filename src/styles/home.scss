@@ -1,3 +1,5 @@
+@import 'definitions.scss';
+
 @media (prefers-color-scheme: dark) {
     :root {
         filter: invert(100%);
@@ -7,9 +9,11 @@
 
 .legend {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
     gap: .5rem;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.406);
+    border-bottom: 1px solid $halfGray;
+    margin-bottom: .5rem;
 }
 
 label.info {
@@ -22,4 +26,11 @@ label.info {
 
 .text-error {
     color: red
+}
+
+.user {
+    background: $halfGray;
+    border-radius: 4px;
+    padding: .5rem;
+    margin-left: auto;
 }

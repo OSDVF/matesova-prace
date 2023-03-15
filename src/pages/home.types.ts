@@ -1,4 +1,4 @@
-import { TableField } from "../components/table";
+import { TableField } from "../components/Table";
 
 export const fields: TableField[] = [
     {
