@@ -154,7 +154,8 @@ export class Home extends Component<Props, State> {
           }
           data={this.state.applications ?? []}
           fields={fields}
-          showIndexColumn={true} />
+          showIndexColumn={true}
+          checkboxes={true} />
       </>
     )
   }
