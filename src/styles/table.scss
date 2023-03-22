@@ -12,7 +12,9 @@ table {
         background: $eightGray;
         border: 0;
         border-radius: 4px;
-        &:hover,&:focus {
+
+        &:hover,
+        &:focus {
             background: $quarterGray;
         }
     }
@@ -35,7 +37,8 @@ table {
         top:0;
         background: rgb(192, 192, 192);
 
-        &:hover, &:focus-within {
+        &:hover,
+        &:focus-within {
             .filterBtn {
                 visibility: visible;
             }
@@ -48,6 +51,7 @@ table {
 
         td {
             overflow: hidden;
+
             &>div {
                 overflow: hidden;
                 max-height: $closedCell;
@@ -68,6 +72,46 @@ table {
             &>td>div {
                 overflow: visible;
             }
+        }
+    }
+}
+
+.filters {
+    height: 1.5rem;
+    .icon {
+        display: inline-block;
+        width: 30px;
+        height: 7px;
+    }
+
+    .filter {
+        border-radius: 5px;
+        padding: .15rem;
+        font-size: .9rem;
+
+        input {
+            background: 0;
+            border: 0;
+        }
+
+        .close {
+            background: 0;
+            border: 0;
+            border-radius: 3px;
+
+            &:hover,
+            &:focus {
+                background: $halfGray;
+            }
+        }
+    }
+
+    &:focus-within {
+        position: sticky;
+        top: 0;
+        background: white;
+        &+table th {
+            top: 1.5rem;
         }
     }
 }

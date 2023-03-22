@@ -1,8 +1,9 @@
 import classNames from 'classnames';
-import { MutableRef, useRef, useState } from 'preact/hooks';
+import { MutableRef, useEffect, useRef, useState } from 'preact/hooks';
 import { Fragment, JSX } from 'preact/jsx-runtime';
 import '../styles/table.scss'
 import { TableAction, TableRow } from './TableRow';
+import stringToColor from '../plugins/stringToColor';
 
 export type TableField = {
     text: string;
@@ -39,6 +40,9 @@ export function Table<T>({
     const [allChecked, setAllChecked] = useState(false);
     const [allCheckPressed, setAllCheckPressed] = useState(false);
     const [appliedFilters, setAppliedFilters] = useState<Filter[]>([]);
+    // For focusing newly created filter:
+    const [newFilter, setNewFilter] = useState<number | null>(null);
+    const newFilterInput: MutableRef<HTMLInputElement | undefined> = useRef();
 
     function updateFilter(filter: Filter, filterPos: number) {
         setAppliedFilters([
@@ -49,23 +53,40 @@ export function Table<T>({
         ])
     }
 
+    useEffect(() => {
+        if (newFilter != null) {
+            newFilterInput.current?.focus();
+            setNewFilter(null);
+        }
+    }, [newFilter]);
+
     return <>
-        <div>{
+        <div className="filters"><div className="icon"><i className="gg-filter" /></div>{
             appliedFilters.map((filter, filterPos) => {
+                const fieldText = fields[filter.index].text;
+
                 return <span className={classNames({
                     filter: true,
                     applied: filter.applied
-                })} onClick={_ => updateFilter({ ...filter, applied: !filter.applied }, filterPos)}>
-                    {fields[filter.index].text}:&nbsp;
-                    <input type="text" value={filter.value} onInput={e => updateFilter({
+                })} style={{ background: (filter.applied ? stringToColor(fieldText) : '#cccccc') + '77' }} onClick={e => {
+                    if (e.target == e.currentTarget) {
+                        updateFilter({ ...filter, applied: !filter.applied }, filterPos)
+                    }
+                }}>
+                    {fieldText}:&nbsp;
+                    <input type="text" ref={filter.index == newFilter ? newFilterInput as MutableRef<HTMLInputElement> : null} value={filter.value} onInput={e => updateFilter({
                         index: filter.index,
                         applied: true,
                         value: e.currentTarget.value
                     }, filterPos)} />
 
-                    < button class="close" onClick={() => setAppliedFilters(
-                        appliedFilters.splice(filterPos, 1)
-                    )}>&times;</button>
+                    <button class="close" onClick={() => {
+                        const newFilters = [...appliedFilters];
+                        newFilters.splice(filterPos);
+                        setAppliedFilters(
+                            newFilters
+                        );
+                    }}>&times;</button>
                 </span>
             })
         }</div>
@@ -91,8 +112,9 @@ export function Table<T>({
                                     })}
                                 onClick={_ => {
                                     setAppliedFilters([...appliedFilters, { index: fieldIndex, applied: true, value: "" }]);
+                                    setNewFilter(fieldIndex);
                                 }}>
-                                <i className="gg-fiter" /></button>
+                                <i className="gg-filter" /></button>
                             );
                         }
 
