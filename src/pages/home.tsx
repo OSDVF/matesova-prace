@@ -160,7 +160,9 @@ export class Home extends Component<Props, State> {
           actions={[
             {
               text: "Re-send confirmation email",
-              onClick: () => { }
+              onClick: () => {
+                ApiLayer.resendEmail();
+              }
             }
           ]} />
       </>

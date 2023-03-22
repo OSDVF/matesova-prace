@@ -36,4 +36,14 @@ export default class ApiLayer {
             }
         ));
     }
+
+    static async resendEmail() : Promise<receivedData<any>> {
+        await this.lastRequest;
+        return (this.lastRequest = API.post(
+            {
+                resource: 'manageApp',
+                action: 'resendMail'
+            }
+        ));
+    }
 };

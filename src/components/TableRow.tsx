@@ -1,5 +1,5 @@
-import { Component, ComponentChild } from "preact";
-import { createPortal } from "preact/compat";
+import { Component, ComponentChild, createRef, RefObject } from "preact";
+import { createPortal, useImperativeHandle } from "preact/compat";
 import { JSXInternal } from "preact/src/jsx";
 import { Menu } from "./Menu";
 
@@ -18,7 +18,8 @@ type State = {
     lastClick: {
         left: number,
         top: number
-    }
+    },
+    thisComponent: RefObject<HTMLDivElement>
 };
 
 export type TableAction = {
@@ -36,7 +37,8 @@ export class TableRow extends Component<Props, State> {
             lastClick: {
                 left: 0,
                 top: 0
-            }
+            },
+            thisComponent: createRef()
         }
     }
 
@@ -46,7 +48,19 @@ export class TableRow extends Component<Props, State> {
         });
     }
 
+    closePotentialContextMenu(event: MouseEvent) {
+        if (event.target && !this.state.thisComponent.current?.contains(event.currentTarget as Node)) {
+            this.setState({
+                toggleState: false
+            })
+        }
+    }
+
     render(props: Props, state: Readonly<State>): ComponentChild {
+        if (state.toggleState) {
+            document.body.addEventListener('click', e => this.closePotentialContextMenu(e), true);
+        }
+
         const showActions = (props.actions ?? false);
 
         const indexColContent: preact.JSX.Element[] = [];
@@ -77,7 +91,7 @@ export class TableRow extends Component<Props, State> {
                 return false;
             }
         };
-        return <div onClick={actionMenuToggle} onContextMenu={actionMenuToggle}>
+        return <div ref={state.thisComponent} onClick={actionMenuToggle} onContextMenu={actionMenuToggle}>
             {indexColContent}
             {props.afterText}
             {
