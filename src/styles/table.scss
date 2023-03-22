@@ -74,10 +74,41 @@ table {
             }
         }
     }
+
+    tr {
+        height: 1px;
+
+        &>.index {
+            height: inherit;
+
+            @supports (height: -moz-available) {
+                height: 100%;
+            }
+
+            &>div {
+                cursor: pointer;
+                height: 100%;
+                max-height: 100%;
+                overflow: unset;
+
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+                padding: .1rem .2rem;
+
+                &:hover, &:focus-within{
+                    background-color: $halfGray;
+                }
+            }
+
+        }
+    }
 }
 
 .filters {
     height: 1.5rem;
+
     .icon {
         display: inline-block;
         width: 30px;
@@ -110,6 +141,7 @@ table {
         position: sticky;
         top: 0;
         background: white;
+
         &+table th {
             top: 1.5rem;
         }

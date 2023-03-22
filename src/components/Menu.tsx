@@ -6,15 +6,15 @@ import '../styles/menu.scss'
 type Props = {
     left: number,
     top: number,
-    items: {
-        text: string,
+    items?: {
+        text?: string,
         onClick: JSXInternal.EventHandler<JSXInternal.TargetedMouseEvent<HTMLLIElement>>
     }[]
 }
 export function Menu({ left, top, items }: Props) {
     return (
         <ul class="menu" style={{ left, top }}>
-            {items.map(item => (
+            {items?.map(item => (
                 <li onClick={item.onClick}>{item.text}</li>
             ))}
         </ul>

@@ -156,7 +156,13 @@ export class Home extends Component<Props, State> {
           fields={fields}
           showIndexColumn={true}
           checkboxes={true}
-          filters={true} />
+          filters={true}
+          actions={[
+            {
+              text: "Re-send confirmation email",
+              onClick: () => { }
+            }
+          ]} />
       </>
     )
   }
