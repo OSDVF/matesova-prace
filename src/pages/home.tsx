@@ -104,7 +104,7 @@ export class Home extends Component<Props, State> {
     })
     Sentry.captureException(e);
   }
-  render() {
+  render(props: Props, state: Readonly<State>) {
     const [error, resetError] = useErrorBoundary(error => {
       Sentry.captureException(error);
     });
@@ -122,48 +122,59 @@ export class Home extends Component<Props, State> {
       );
     }
 
-    if (this.state.selectedEventID != null && this.state.applications == null) {
+    if (state.selectedEventID != null && state.applications == null) {
       this.fetchApplications();
     }
 
-    if (!this.state.loggedIn) {
+    if (!state.loggedIn) {
       return <div>{this.handler}</div>;
     }
 
     return (
       <>
         <Legend
-          events={this.state.events}
+          events={state.events}
           onSelectEvent={linkState(this, 'selectedEventID')}
-          selectedEventID={this.state.selectedEventID}
+          selectedEventID={state.selectedEventID}
           loginHandler={this.handler}
         />
         <div className="legend">
-          <strong>Statistics</strong><label className="info">People count: <span>{this.state.applications?.length}</span></label>
-          <label className="info">Wrap text: <input type="checkbox" checked={!this.state.truncateCells} onChange={() => this.setState({ truncateCells: !this.state.truncateCells })} /></label>
+          <strong>Statistics</strong><label className="info">People count: <span>{state.applications?.length}</span></label>
+          <label className="info">Wrap text: <input type="checkbox" checked={!state.truncateCells} onChange={() => this.setState({ truncateCells: !state.truncateCells })} /></label>
         </div>
         {
-          this.state.errorMessage != null ?
+          state.errorMessage != null ?
             <output className="text-error">
-              {this.state.errorMessage}
+              {state.errorMessage}
             </output> : ''
         }
         <Table
           className={
             classNames({
-              truncate: this.state.truncateCells
+              truncate: state.truncateCells
             })
           }
-          data={this.state.applications ?? []}
+          data={state.applications ?? []}
           fields={fields}
           showIndexColumn={true}
           checkboxes={true}
           filters={true}
-          actions={[
+          defaultActions={[
             {
               text: "Re-send confirmation email",
-              onClick: () => {
-                ApiLayer.resendEmail();
+              onClick: function () {
+                if (Array.isArray(this)) {
+                  // Multiple lines were selected
+                  for (let row of this) {
+                    ApiLayer.resendEmail(row.appID);
+                  }
+                }
+                else if (this) {
+                  ApiLayer.resendEmail(this.appID);
+                }
+                else {
+                  console.log("No line was selected");
+                }
               }
             }
           ]} />

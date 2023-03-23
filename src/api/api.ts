@@ -37,12 +37,15 @@ export default class ApiLayer {
         ));
     }
 
-    static async resendEmail() : Promise<receivedData<any>> {
+    static async resendEmail(appID: number) : Promise<receivedData<any>> {
         await this.lastRequest;
         return (this.lastRequest = API.post(
             {
                 resource: 'manageApp',
-                action: 'resendMail'
+                action: 'resendMail',
+                data: {
+                    appID
+                }
             }
         ));
     }

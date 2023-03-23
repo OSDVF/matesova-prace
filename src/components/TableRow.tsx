@@ -1,15 +1,16 @@
 import { Component, ComponentChild, createRef, RefObject } from "preact";
-import { createPortal, useImperativeHandle } from "preact/compat";
+import { createPortal } from "preact/compat";
 import { JSXInternal } from "preact/src/jsx";
 import { Menu } from "./Menu";
 
-type Props = {
+type Props<T> = {
     checkbox?: boolean,
     checked?: boolean,
-    actions?: TableAction[],
+    actions?: TableAction<T>[],
     onUncheck?: () => void,
     onChange?: JSXInternal.GenericEventHandler<HTMLInputElement>,
-    afterText?: string
+    afterText?: string,
+    context: T | T[] | null
 };
 
 type State = {
@@ -22,14 +23,14 @@ type State = {
     thisComponent: RefObject<HTMLDivElement>
 };
 
-export type TableAction = {
-    onClick: () => void,
+export type TableAction<T> = {
+    onClick: (this: T | T[] | null, e: JSXInternal.TargetedMouseEvent<HTMLLIElement>) => void,
     text: string,
     icon?: string
 };
 
-export class TableRow extends Component<Props, State> {
-    constructor(props?: Props) {
+export class TableRow<T extends any> extends Component<Props<T>, State> {
+    constructor(props?: Props<T>) {
         super(props);
         this.state = {
             checked: props?.checked ?? false,
@@ -56,7 +57,7 @@ export class TableRow extends Component<Props, State> {
         }
     }
 
-    render(props: Props, state: Readonly<State>): ComponentChild {
+    render(props: Props<T>, state: Readonly<State>): ComponentChild {
         if (state.toggleState) {
             document.body.addEventListener('click', e => this.closePotentialContextMenu(e), true);
         }
@@ -98,7 +99,7 @@ export class TableRow extends Component<Props, State> {
                 state.toggleState ? createPortal(
                     <Menu {...state.lastClick} items={
                         props.actions?.map(val => ({
-                            onClick: e => val.onClick(),
+                            onClick: e => val.onClick.apply(props.context, [e]),
                             text: val.text
                         }))
                     } />, document.body

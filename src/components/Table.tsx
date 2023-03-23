@@ -21,7 +21,7 @@ type Props<T> = {
     showIndexColumn?: boolean,
     className: string,
     checkboxes?: boolean,
-    actions?: TableAction[],
+    defaultActions?: TableAction<T>[],
     filters?: boolean
 };
 
@@ -31,17 +31,21 @@ type Filter = {
     applied: boolean
 };
 
-export function Table<RowType>({
+type RowWithAction<T> = {
+    actions: TableAction<T>[]
+}
+
+export function Table<RowType extends (RowWithAction<RowType> | any)>({
     data,
     fields,
     showIndexColumn = false,
     className,
     checkboxes = false,
-    actions = [],
+    defaultActions = [],
     filters = false
 }: Props<RowType>) {
 
-    const showActions = (actions ?? false);
+    const showActions = (defaultActions ?? false);
     const [allChecked, setAllChecked] = useState(false);
     const [allCheckPressed, setAllCheckPressed] = useState(false);
     const [appliedFilters, setAppliedFiltersInternal] = useState<Filter[]>([]);
@@ -52,6 +56,7 @@ export function Table<RowType>({
     function setAppliedFilters(filters: Filter[]) {
         setAllChecked(false);// When a filter changes, everything must be unselected
         setAppliedFiltersInternal(filters);
+        localforage.setItem(FILTERS_STORAGE_KEY, filters);
     }
 
     function updateFilter(filter: Filter, filterPos: number) {
@@ -62,7 +67,6 @@ export function Table<RowType>({
             ...appliedFilters.slice(filterPos + 1)
         ];
         setAppliedFilters(newFilters);
-        localforage.setItem(FILTERS_STORAGE_KEY, newFilters);
     }
 
     // On component created
@@ -81,6 +85,21 @@ export function Table<RowType>({
             setNewFilter(null);
         }
     }, [newFilter]);
+
+    const filteredData = data
+        .filter(row => {
+            let i = 0;
+            for (let field of fields) {
+                const correspondingFilter = appliedFilters.find(f => f.index == i);
+                const filterEmpty = correspondingFilter == null || correspondingFilter.applied == false || !correspondingFilter.value;
+                const val = row[field.propName as keyof RowType];
+                if (!filterEmpty && val && val.toString().indexOf(correspondingFilter.value) == -1) {
+                    return false;
+                }
+                i++;
+            }
+            return true;
+        });
 
     return <>
         {appliedFilters.length ?
@@ -123,16 +142,21 @@ export function Table<RowType>({
                 <tr>
                     {showIndexColumn || showActions ?
                         <th className="index"><TableRow
+                            context={filteredData}
                             checkbox={true}
                             checked={allChecked}
                             onChange={e => (setAllChecked(e.currentTarget.checked), setAllCheckPressed(true))}
                             afterText="Select"
-                            actions={actions}
+                            actions={defaultActions}
                         />
                         </th> : null
                     }
 
-                    {fields.filter(f => f.show ?? true).map((field, fieldIndex) => {
+                    {fields.map((field, fieldIndex) => {
+                        if(!(field?.show ?? true))
+                        {
+                            return null;
+                        }
                         const headerContent: JSX.Element[] = [<Fragment>{field.text}</Fragment>];
                         if (filters) {
                             headerContent.push(<button
@@ -153,27 +177,15 @@ export function Table<RowType>({
                 </tr>
             </thead>
             <tbody>
-                {data
-                    .filter(row => {
-                        let i = 0;
-                        for (let field of fields) {
-                            const correspondingFilter = appliedFilters.find(f => f.index == i);
-                            const filterEmpty = correspondingFilter == null || correspondingFilter.applied == false || !correspondingFilter.value;
-                            const val = row[field.propName as keyof RowType];
-                            if (!filterEmpty && val && val.toString().indexOf(correspondingFilter.value) == -1) {
-                                return false;
-                            }
-                            i++;
-                        }
-                        return true;
-                    })
-                    .map((row, index) => {
-                        const checkRef: MutableRef<TableRow | undefined> = useRef();
+                {
+                    filteredData.map((row, index) => {
+                        const checkRef: MutableRef<TableRow<RowType> | undefined> = useRef();
                         const items: JSX.Element[] = [];
                         let indexColContent: JSX.Element[] = [];
 
                         if (showActions) {
-                            indexColContent.push(<TableRow actions={actions}
+                            indexColContent.push(<TableRow actions={(row as RowWithAction<RowType>)?.actions ?? defaultActions}
+                                context={row}
                                 checkbox={checkboxes}
                                 ref={checkRef}
                                 onUncheck={() => setAllChecked(false)}

@@ -7,10 +7,10 @@ import ttypescript from 'ttypescript'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    preact(),
     typescript({
       typescript: ttypescript,
     }),
+    preact(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
