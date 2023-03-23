@@ -10,7 +10,9 @@ const FILTERS_STORAGE_KEY = 'filters';
 
 export type TableField = {
     text: string;
-    class: string;
+    propName: string;
+    class?: string;
+    show?: boolean;
 };
 
 type Props<T> = {
@@ -29,7 +31,7 @@ type Filter = {
     applied: boolean
 };
 
-export function Table<T>({
+export function Table<RowType>({
     data,
     fields,
     showIndexColumn = false,
@@ -37,7 +39,7 @@ export function Table<T>({
     checkboxes = false,
     actions = [],
     filters = false
-}: Props<T>) {
+}: Props<RowType>) {
 
     const showActions = (actions ?? false);
     const [allChecked, setAllChecked] = useState(false);
@@ -65,7 +67,7 @@ export function Table<T>({
 
     // On component created
     useEffect(() => {
-        localforage.getItem(FILTERS_STORAGE_KEY, (err, value) => {
+        localforage.getItem(FILTERS_STORAGE_KEY, (_, value) => {
             if (value) {
                 setAppliedFilters(value as Filter[]);
             }
@@ -130,7 +132,7 @@ export function Table<T>({
                         </th> : null
                     }
 
-                    {fields.map((field, fieldIndex) => {
+                    {fields.filter(f => f.show ?? true).map((field, fieldIndex) => {
                         const headerContent: JSX.Element[] = [<Fragment>{field.text}</Fragment>];
                         if (filters) {
                             headerContent.push(<button
@@ -154,10 +156,11 @@ export function Table<T>({
                 {data
                     .filter(row => {
                         let i = 0;
-                        for (let property in row) {
+                        for (let field of fields) {
                             const correspondingFilter = appliedFilters.find(f => f.index == i);
                             const filterEmpty = correspondingFilter == null || correspondingFilter.applied == false || !correspondingFilter.value;
-                            if (!filterEmpty && (row[property] as string).indexOf(correspondingFilter.value) == -1) {
+                            const val = row[field.propName as keyof RowType];
+                            if (!filterEmpty && val && val.toString().indexOf(correspondingFilter.value) == -1) {
                                 return false;
                             }
                             i++;
@@ -187,8 +190,10 @@ export function Table<T>({
                         if (showIndexColumn || showActions) {
                             items.push(<td class="index">{indexColContent}</td>);
                         }
-                        for (let property in row) {
-                            items.push(<td tabIndex={0}><div>{row[property]!}</div></td>);
+                        for (let field of fields) {
+                            if ((field.show ?? true) && Object.hasOwn(row as object, field.propName)) {
+                                items.push(<td tabIndex={0}><div>{row[field.propName as keyof RowType] as string}</div></td>);
+                            }
                         }
                         return <tr>{items}</tr>;
                     })}

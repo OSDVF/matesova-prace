@@ -20,6 +20,7 @@ export enum ApplicationState {
 }
 
 export type application = {
+    appID: number,
     name: string,
     sname: string,
     age: number,

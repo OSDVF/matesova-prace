@@ -114,7 +114,9 @@ export class Home extends Component<Props, State> {
         <Fragment>
           <h1>Error</h1>
           <p>An error occurred.</p>
-          <small>Reason: {error.message}</small>
+          <small>Reason: {error.message}
+            <details>Details: {JSON.stringify(error)}</details>
+          </small>
           <button onClick={resetError}>Try again</button>
         </Fragment>
       );

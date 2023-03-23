@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rollup/plugin-typescript": "^11.0.0",
     "@sentry/react": "^7.43.0",
     "@sentry/tracing": "^7.43.0",
     "classnames": "^2.3.2",
@@ -17,7 +18,8 @@
     "preact": "^10.11.3",
     "preact-custom-element": "^4.2.1",
     "preact-router": "^4.1.0",
-    "renette-api": "git+https://gitlab.com/osdvf/renette-api.git"
+    "renette-api": "git+https://gitlab.com/osdvf/renette-api.git",
+    "ts-transformer-keys": "^0.4.4"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.5.0",
@@ -26,6 +28,7 @@
     "@types/preact-custom-element": "^4.0.1",
     "localforage": "^1.10.0",
     "sass": "^1.59.3",
+    "ttypescript": "^1.5.15",
     "typescript": "^4.9.3",
     "vite": "^4.1.0",
     "vite-plugin-pwa": "^0.14.4"
