@@ -1,12 +1,11 @@
 import register from 'preact-custom-element';
 import linkState from 'linkstate';
-import { Component, Fragment } from 'preact'
-import { useContext, useErrorBoundary } from "preact/hooks";
+import { Component } from 'preact'
+import { useContext } from "preact/hooks";
 
 import ApiLayer from '../api/api'
 import { receivedData } from 'renette-api/dist/types';
 import { Table } from '../components/Table';
-import { LoginHandler } from '../components/LoginHandler';
 import { fields } from './home.types';
 
 import * as Sentry from '@sentry/react';
@@ -14,10 +13,8 @@ import { BrowserTracing } from '@sentry/tracing';
 import '../plugins/polyfills.js'
 import '../styles/home.scss'
 import { Legend } from '../components/Legend';
-import { JSXInternal } from 'preact/src/jsx';
 import classNames from 'classnames';
 import { AppStateContext } from '../plugins/state';
-import { useRouter } from 'preact-router';
 import { SubfolderRouter } from '../components/SubFolderRouter';
 
 if (import.meta.env.PROD) {

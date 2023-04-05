@@ -78,7 +78,7 @@ export default class Teams extends Component<Props, State> {
 
         return <>
             <h1>Teams</h1>
-            <Link href={Routes.Home}>Back to home</Link><br />
+            <Link href={Routes.link(Routes.Home)}>Back to home</Link><br />
             {globalState.applications !== null ? <>
                 <button onClick={() => this.randomize(globalState.applications!)}>Randomize</button>
                 <br />
