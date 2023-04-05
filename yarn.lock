@@ -2508,9 +2508,10 @@ preact-custom-element@^4.2.1:
   resolved "https://registry.npmjs.org/preact-custom-element/-/preact-custom-element-4.2.1.tgz"
   integrity sha512-/fiEEAyC+MXRlCBRmv/owoN5BLpO2nF/MF3YBHLtp4C2lNqlhV+a4he74A5DhfDoRmxDHm0sYVgQzWFEyzTDsw==
 
-"preact-dnd@git+https://github.com/NekR/preact-dnd.git":
+preact-dnd@^2.1.6:
   version "2.1.6"
-  resolved "git+https://github.com/NekR/preact-dnd.git#896b07e5fcdf151b08ca0825adbd3ee96755d815"
+  resolved "https://registry.yarnpkg.com/preact-dnd/-/preact-dnd-2.1.6.tgz#feb11d6e18c2fbc710950f85fb31e7f1a58a00fd"
+  integrity sha512-rKz7J+0cALFTeQrxREwIGrSe15SuOUHYps6Z9Tr5q4V+URkdVcySODzw3agU+N6BXCDELVC+H4ljNwSVcKbyGw==
   dependencies:
     disposables "^1.0.1"
     dnd-core "^2.0.1"

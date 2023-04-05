@@ -1,21 +1,36 @@
 import classNames from "classnames";
+import dnd from "preact-dnd";
 
-export default function Person()
-{
+export type Person = {
+    name: string,
+    friends: Person[]
+};
+type Props = {
+    person: Person,
+    onRemove: () => void
+}
+
+export default function PersonElem({ person, onRemove }: Props) {
+    const [{ isDragging }, drag] = dnd.useDrag(() => ({
+        type: 'person',
+        item: person,
+        collect: monitor => ({
+            isDragging: !!monitor.isDragging(),
+        }),
+    }))
+
     return <div class={classNames({
-        person: true
-    })} draggable={true}
-        onDragStart={e => this.startDrag(e, indexT, indexP)}
-        onDrop={e => this.onDropPerson(e, indexT, indexP)}
-        onDragOver={e => e.preventDefault()}
-        onDragEnter={e => e.preventDefault()}
+        person: true,
+        dragging: isDragging
+    })}
+        ref={drag}
     >
         <img
             src="/person.svg"
             alt="Osoba"
         />
         <span>{person.name}</span>&ensp;
-        <button onClick={() => this.removePerson(indexT, indexP)}>🗑</button>
+        <button onClick={onRemove}>🗑</button>
         <br />
     </div >
 }

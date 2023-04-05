@@ -8,17 +8,8 @@ import { Link } from "preact-router";
 import Routes from "../plugins/routes";
 import linkState from "linkstate";
 import dnd from 'preact-dnd'
-
-
-type Person = {
-    name: string,
-    friends: Person[]
-};
-
-type Team = {
-    name: string,
-    people: Person[]
-}
+import PersonElem, { Person } from "../components/Person";
+import TeamElem, { Team } from "../components/Team";
 
 type Props = {
 
@@ -96,39 +87,25 @@ export default class Teams extends Component<Props, State> {
                 </label>
                 <div class="teams">
                     {
-                        state.teams.map((team, indexT) => <div
-                            onDrop={e => this.onDropTeam(e, indexT)}
-                            onDragOver={e => e.preventDefault()}
-                            onDragEnter={e => e.preventDefault()}
-                        >
-                            <h3><input type="text" value={team.name} onChange={e => {
-                                const teams = state.teams;
-                                teams[indexT].name = e.currentTarget.value || team.name
-                                this.setState({
-                                    teams
-                                })
-                            }} />
-                                {state.teams.length > 1 && <button>🗑</button>}
-                            </h3>
-                            {team.people.map((person, indexP) =>
-                                <div class={classNames({
-                                    person: true
-                                })} draggable={true}
-                                    onDragStart={e => this.startDrag(e, indexT, indexP)}
-                                    onDrop={e => this.onDropPerson(e, indexT, indexP)}
-                                    onDragOver={e => e.preventDefault()}
-                                    onDragEnter={e => e.preventDefault()}
-                                >
-                                    <img
-                                        src="/person.svg"
-                                        alt="Osoba"
-                                    />
-                                    <span>{person.name}</span>&ensp;
-                                    <button onClick={() => this.removePerson(indexT, indexP)}>🗑</button>
-                                    <br />
-                                </div >
-                            )}
-                        </div >
+                        state.teams.map((team, indexT) =>
+                            <TeamElem
+                                onNameChange={n => {
+                                    const teams = state.teams;
+                                    teams[indexT].name = n
+                                    this.setState({
+                                        teams
+                                    })
+                                }}
+                                onChange={t => {
+                                    const teams = state.teams;
+                                    teams[indexT] = t;
+                                    this.setState({
+                                        teams
+                                    })
+                                }}
+                                showDeleteButton={state.teams.length > 1}
+                                team={team}
+                            />
                         )}
                 </div ></> :
                 <>Loading applications</>
