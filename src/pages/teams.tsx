@@ -1,4 +1,4 @@
-import { Component } from "preact";
+import { Component, JSX } from "preact";
 import '../styles/teams.scss'
 import classNames from "classnames";
 import { useContext } from "preact/hooks";
@@ -7,10 +7,17 @@ import { application } from "../api/api.types";
 import { Link } from "preact-router";
 import Routes from "../plugins/routes";
 import linkState from "linkstate";
+import dnd from 'preact-dnd'
+
+
+type Person = {
+    name: string,
+    friends: Person[]
+};
 
 type Team = {
     name: string,
-    people: string[]
+    people: Person[]
 }
 
 type Props = {
@@ -21,6 +28,7 @@ type State = {
     targetPeopleCount: number
 };
 export default class Teams extends Component<Props, State> {
+    private dragging = false;
 
     constructor(props: Props) {
         super(props)
@@ -60,7 +68,7 @@ export default class Teams extends Component<Props, State> {
                 currentTeam = teams[teams.length - 1];
             }
 
-            currentTeam.people.push(pickedPerson.name + ' ' + pickedPerson.sname);
+            currentTeam.people.push({ name: pickedPerson.name + ' ' + pickedPerson.sname, friends: [] });
         }
         this.setState({
             teams
@@ -88,7 +96,11 @@ export default class Teams extends Component<Props, State> {
                 </label>
                 <div class="teams">
                     {
-                        state.teams.map((team, indexT) => <div>
+                        state.teams.map((team, indexT) => <div
+                            onDrop={e => this.onDropTeam(e, indexT)}
+                            onDragOver={e => e.preventDefault()}
+                            onDragEnter={e => e.preventDefault()}
+                        >
                             <h3><input type="text" value={team.name} onChange={e => {
                                 const teams = state.teams;
                                 teams[indexT].name = e.currentTarget.value || team.name
@@ -101,12 +113,17 @@ export default class Teams extends Component<Props, State> {
                             {team.people.map((person, indexP) =>
                                 <div class={classNames({
                                     person: true
-                                })} draggable={true}>
+                                })} draggable={true}
+                                    onDragStart={e => this.startDrag(e, indexT, indexP)}
+                                    onDrop={e => this.onDropPerson(e, indexT, indexP)}
+                                    onDragOver={e => e.preventDefault()}
+                                    onDragEnter={e => e.preventDefault()}
+                                >
                                     <img
                                         src="/person.svg"
                                         alt="Osoba"
                                     />
-                                    <span>{person}</span>&ensp;
+                                    <span>{person.name}</span>&ensp;
                                     <button onClick={() => this.removePerson(indexT, indexP)}>🗑</button>
                                     <br />
                                 </div >
@@ -117,6 +134,104 @@ export default class Teams extends Component<Props, State> {
                 <>Loading applications</>
             }
         </>
+    }
+    onDropPerson(evt: JSX.TargetedDragEvent<HTMLDivElement>, indexT: number, indexP: number): void {
+        this.dragging = false;
+        if (evt.dataTransfer == null) return;
+        const { draggedT, draggedP } = JSON.parse(
+            evt.dataTransfer.getData('indexes')
+        );
+
+        var draggedPerson = this.state.teams[draggedT]?.people[draggedP];
+        if (!this.state.teams[indexT].people) {
+            this.state.teams[indexT].people = [];
+        }
+        const draggedF = undefined;
+        if (typeof draggedF != 'undefined') {
+            if (!this.state.teams[indexT].people[indexP].friends) {
+                this.state.teams[indexT].people[indexP].friends = [];
+            }
+            this.state.teams[indexT].people[indexP].friends.push(
+                draggedPerson.friends[draggedF]
+            );
+            draggedPerson.friends.splice(draggedF, 1);
+        }
+        else {
+            if (indexT == draggedT && indexP == draggedP) {
+                return;//Dragged to same person
+            }
+
+            // Flatten friends array
+            var friendsToAdd: Person[] = [];
+            if (draggedPerson.friends?.length > 0) {
+                friendsToAdd = draggedPerson.friends;
+            }
+            if (!this.state.teams[indexT].people[indexP].friends) {
+                this.state.teams[indexT].people[indexP].friends = [];
+            }
+            this.state.teams[indexT].people[indexP].friends.push(
+                {
+                    name: draggedPerson.name,
+                    friends: []
+                }
+            );
+            for (var previousFriend of friendsToAdd) {
+                this.state.teams[indexT].people[indexP].friends.push(
+                    previousFriend);
+            }
+            this.state.teams[draggedT].people.splice(draggedP, 1);
+        }
+    }
+    startDrag(evt: JSX.TargetedDragEvent<HTMLDivElement>, indexT: number, indexP: number): void {
+        if (!this.dragging) {
+            this.dragging = true;
+            if (evt.dataTransfer != null) {
+                evt.dataTransfer.dropEffect = 'move'
+                evt.dataTransfer.effectAllowed = 'move'
+                evt.dataTransfer.setData('indexes', JSON.stringify(
+                    {
+                        draggedT: indexT,
+                        draggedP: indexP
+                    }
+                ));
+            }
+        }
+    }
+    onDropTeam(evt: JSX.TargetedDragEvent<HTMLDivElement>, indexT: any): void {
+        this.dragging = false;
+        if (evt.dataTransfer == null) return;
+        const { draggedT, draggedP, draggedF } = JSON.parse(
+            evt.dataTransfer.getData('indexes')
+        );
+
+        var draggedPerson = (this.state.teams[draggedT]?.people ?? [])[draggedP];
+        if (!this.state.teams[indexT].people) {
+            this.state.teams[indexT].people = [];
+        }
+        if (typeof draggedPerson != 'undefined') {
+            //If the dragged item still exists
+            if (draggedT == indexT)
+                return;//Dragged to same team
+
+            if (typeof draggedF != 'undefined') {
+                if (!draggedPerson.friends) {
+                    draggedPerson.friends = [];
+                }
+                var draggedFriend = draggedPerson.friends[draggedF];
+                if (typeof draggedFriend != 'undefined') {
+                    this.state.teams[indexT].people.push(
+                        draggedFriend
+                    );
+                    this.state.teams[draggedT].people[draggedP].friends.splice(draggedF, 1);
+                }
+            }
+            else {
+                this.state.teams[indexT].people.push(
+                    this.state.teams[draggedT].people[draggedP]
+                );
+                this.state.teams[draggedT].people.splice(draggedP, 1);
+            }
+        }
     }
 }
 

@@ -38,7 +38,4 @@
       "path": "./tsconfig.node.json"
     }
   ],
-  "files": [
-    "./node_modules/ts-nameof/ts-nameof.d.ts"
-  ]
 }
