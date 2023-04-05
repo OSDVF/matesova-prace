@@ -33,8 +33,7 @@ export class SubfolderRouter extends Router {
             Sentry.captureException(error);
         });
         const globalState = useContext(AppStateContext);
-        if(!this.subscribed)
-        {
+        if (!this.subscribed) {
             this.subscribed = true;
             globalState.onChange = () => this.setState({});
         }
@@ -77,6 +76,7 @@ export class SubfolderRouter extends Router {
                 ...state,
                 url: state.url.substr(import.meta.env.BASE_URL.length),
             };
+            this.setState(state)
         }
         return <>{super.render(props, state)}
             {
