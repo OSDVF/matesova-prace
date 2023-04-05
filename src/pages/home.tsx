@@ -1,11 +1,10 @@
 import register from 'preact-custom-element';
 import linkState from 'linkstate';
 import { Component, Fragment } from 'preact'
-import { useErrorBoundary } from "preact/hooks";
+import { useContext, useErrorBoundary } from "preact/hooks";
 
 import ApiLayer from '../api/api'
 import { receivedData } from 'renette-api/dist/types';
-import { application, futureEvent } from '../api/api.types'
 import { Table } from '../components/Table';
 import { LoginHandler } from '../components/LoginHandler';
 import { fields } from './home.types';
@@ -17,6 +16,7 @@ import '../styles/home.scss'
 import { Legend } from '../components/Legend';
 import { JSXInternal } from 'preact/src/jsx';
 import classNames from 'classnames';
+import { AppStateContext } from '../plugins/state';
 
 if (import.meta.env.PROD) {
   Sentry.init({
@@ -36,9 +36,6 @@ type Props = {
   eventID: number | null
 };
 type State = {
-  events: futureEvent[],
-  selectedEventID: number | null
-  applications: application[] | null,
   errorMessage: string | null,
   loggedIn: boolean,
   truncateCells: boolean
@@ -51,9 +48,6 @@ export class Home extends Component<Props, State> {
     super(props);
 
     this.state = {
-      events: [],
-      selectedEventID: this.props.eventID,
-      applications: null,
       errorMessage: null,
       loggedIn: false,
       truncateCells: true
@@ -64,33 +58,6 @@ export class Home extends Component<Props, State> {
       logInPromptText='Log in firstly using your @travna account'
       onLoggedIn={() => this.setState({ loggedIn: true })}
     />
-
-    ApiLayer.auth().catch((e) => this.showError(e));
-
-    ApiLayer.getEvents().then(ev => {
-      this.setState({
-        events: ev.data.events,
-        selectedEventID: this.state.selectedEventID ?? ev.data.events.length == 1 ? ev.data.events[0].eventID : null
-      });
-    });
-  }
-  async fetchApplications() {
-    try {
-      const resp = await ApiLayer.getApplicationsTable(this.state.selectedEventID!);
-      if (resp.data.applications) {
-        this.setState({
-          applications: resp.data.applications
-        })
-      }
-      else {
-        this.setState({
-          errorMessage: this.makeErrorMessage(resp)
-        })
-      }
-    }
-    catch (e) {
-      this.showError(e);
-    }
   }
   makeErrorMessage(response: receivedData<any>): string {
     Sentry.captureEvent({
@@ -108,13 +75,15 @@ export class Home extends Component<Props, State> {
     const [error, resetError] = useErrorBoundary(error => {
       Sentry.captureException(error);
     });
+    const globalState = useContext(AppStateContext);
+    globalState.onChange = () => this.setState({});
 
     if (error) {
       return (
         <Fragment>
           <h1>Error</h1>
           <p>An error occurred.</p>
-          <small>Reason: {error.message}
+          <small>Reason: {error.message.toString()}
             <details>Details: {JSON.stringify(error)}</details>
           </small>
           <button onClick={resetError}>Try again</button>
@@ -122,77 +91,75 @@ export class Home extends Component<Props, State> {
       );
     }
 
-    if (state.selectedEventID != null && state.applications == null) {
-      this.fetchApplications();
-    }
-
     if (!state.loggedIn) {
       return <div>{this.handler}</div>;
     }
 
-    return (
-      <>
-        <Legend
-          events={state.events}
-          onSelectEvent={linkState(this, 'selectedEventID')}
-          selectedEventID={state.selectedEventID}
-          loginHandler={this.handler}
-        />
-        <div className="legend">
-          <strong>Statistics</strong><label className="info">People count: <span>{state.applications?.length}</span></label>
-          <label className="info">Wrap text: <input type="checkbox" checked={!state.truncateCells} onChange={() => this.setState({ truncateCells: !state.truncateCells })} /></label>
-        </div>
-        {
-          state.errorMessage != null ?
-            <output className="text-error">
-              {state.errorMessage}
-            </output> : ''
+    try {
+      if (globalState.selectedEventID != null && globalState.applications == null) {
+        globalState.fetchApplications();
+      }
+      else {
+        globalState.init().then(() => {
+          globalState.selectedEventID = globalState.selectedEventID ?? globalState.events.length == 1 ? globalState.events[0].eventID : null
+          globalState.onChange!();
         }
-        <Table
-          className={
-            classNames({
-              truncate: state.truncateCells
-            })
-          }
-          data={state.applications ?? []}
-          fields={fields}
-          showIndexColumn={true}
-          checkboxes={true}
-          filters={true}
-          defaultActions={[
-            {
-              text: "Re-send confirmation email",
-              onClick: function () {
-                if (Array.isArray(this)) {
-                  // Multiple lines were selected
-                  for (let row of this) {
-                    ApiLayer.resendEmail(row.appID);
-                  }
-                }
-                else if (this) {
-                  ApiLayer.resendEmail(this.appID);
-                }
-                else {
-                  console.log("No line was selected");
+        );
+      }
+    }
+    catch (e) {
+      this.showError(e)
+    }
+
+    return <>
+      <Legend
+        events={globalState.events}
+        onSelectEvent={linkState(this, 'selectedEventID')}
+        selectedEventID={globalState.selectedEventID}
+        loginHandler={this.handler}
+      />
+      <div className="legend">
+        <strong>Statistics</strong><label className="info">People count: <span>{globalState.applications?.length}</span></label>
+        <label className="info">Wrap text: <input type="checkbox" checked={!state.truncateCells} onChange={() => this.setState({ truncateCells: !state.truncateCells })} /></label>
+      </div>
+      {
+        state.errorMessage != null ?
+          <output className="text-error">
+            {state.errorMessage}
+          </output> : ''
+      }
+      {globalState.applications !== null && <Table
+        className={
+          classNames({
+            truncate: state.truncateCells
+          })
+        }
+        data={globalState.applications}
+        fields={fields}
+        showIndexColumn={true}
+        checkboxes={true}
+        filters={true}
+        defaultActions={[
+          {
+            text: "Re-send confirmation email",
+            onClick: function () {
+              if (Array.isArray(this)) {
+                // Multiple lines were selected
+                for (let row of this) {
+                  ApiLayer.resendEmail(row.appID);
                 }
               }
+              else if (this) {
+                ApiLayer.resendEmail(this.appID);
+              }
+              else {
+                console.log("No line was selected");
+              }
             }
-          ]} />
-      </>
-    )
+          }
+        ]} />}
+    </>
   }
 }
 
 register(Home, 'x-matesova-prace', ['eventID'], { shadow: true });
-
-function initLogin() {
-  LoginHandler.initLogin();
-  window.removeEventListener('load', initLogin);
-}
-
-if (document.readyState === "complete") {
-  initLogin();
-}
-else {
-  window.addEventListener('load', initLogin);
-}

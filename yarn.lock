@@ -2433,12 +2433,19 @@ preact-custom-element@^4.2.1:
   resolved "https://registry.yarnpkg.com/preact-custom-element/-/preact-custom-element-4.2.1.tgz#a18752ef60823ea61199d9cdc1866e51139b3f46"
   integrity sha512-/fiEEAyC+MXRlCBRmv/owoN5BLpO2nF/MF3YBHLtp4C2lNqlhV+a4he74A5DhfDoRmxDHm0sYVgQzWFEyzTDsw==
 
+preact-global-state@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/preact-global-state/-/preact-global-state-1.0.5.tgz#10885344bc9e3d080deadbe81b055b13a9a6414d"
+  integrity sha512-REU9jGjPdlFZ1EXF3deZ85LJf+Tcc50SWvLKlGV8vfSeIsJ3+OrA62Cb2GGaEVxELVlkdP0EXsbpsrlIV/1jNQ==
+  dependencies:
+    preact "^10.5.12"
+
 preact-router@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/preact-router/-/preact-router-4.1.0.tgz#5fb77f65746ac937c24746afef11f684ed6ed654"
   integrity sha512-y1w2YvVpKAju9FMV+fAVR1NpH4MW5q07BZrziMZeg6F/rGJ9KvLUZtjOqsy2I8fDYiX36AM1AQTXIIK3jigBhA==
 
-preact@^10.0.0, preact@^10.11.3:
+preact@^10.0.0, preact@^10.11.3, preact@^10.5.12:
   version "10.13.2"
   resolved "https://registry.yarnpkg.com/preact/-/preact-10.13.2.tgz#2c40c73d57248b57234c4ae6cd9ab9d8186ebc0a"
   integrity sha512-q44QFLhOhty2Bd0Y46fnYW0gD/cbVM9dUVtNTDKPcdXSMA7jfY+Jpd6rk3GB0lcQss0z5s/6CmVP0Z/hV+g6pw==

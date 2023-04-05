@@ -52,6 +52,10 @@ export class LoginHandler extends Component<Props, State> {
         }
     }
 
+    componentDidMount(): void {
+        LoginHandler.initLogin();
+    }
+
     render(props: Props, state: State): ComponentChild {
         LoginHandler.instance = this;
 
@@ -85,7 +89,7 @@ export class LoginHandler extends Component<Props, State> {
             <br />
             <small>{LoginHandler.currentUser?.email}</small>
 
-            {state.toggleState ? createPortal(
+            {state.toggleState && createPortal(
                 <Menu {...state.lastClick} items={[{
                     text: 'Log Out',
                     onClick: (e) => {
@@ -96,7 +100,7 @@ export class LoginHandler extends Component<Props, State> {
                         LoginHandler.currentUser = null;
                     }
                 }]} />,
-                document.body) : ''}
+                document.body)}
         </button>
     }
 
