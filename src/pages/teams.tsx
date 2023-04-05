@@ -69,7 +69,7 @@ export default class Teams extends Component<Props, State> {
 
     private subscribed = false;
 
-    render(props: Readonly<Props>, state: Readonly<State>) {
+    render(props: Readonly<Props>, state: State) {
         const globalState = useContext(AppStateContext);
         if (!this.subscribed) {
             this.subscribed = true;
@@ -91,15 +91,16 @@ export default class Teams extends Component<Props, State> {
                         {
                             state.teams.map((team, indexT) =>
                                 <TeamElem
+                                    teamIndex={indexT}
                                     onNameChange={n => {
-                                        const teams = state.teams;
+                                        const teams = [...state.teams];
                                         teams[indexT].name = n
                                         this.setState({
                                             teams
                                         })
                                     }}
                                     onChange={t => {
-                                        const teams = state.teams;
+                                        const teams = [...state.teams];
                                         teams[indexT] = t;
                                         this.setState({
                                             teams

@@ -1,6 +1,7 @@
 import { useDrop } from "react-dnd"
-import PersonElem, { Person } from "./Person"
+import PersonElem, { Person, PersonDragPayload } from "./Person"
 import classNames from "classnames"
+import { useCallback, useState } from "preact/hooks"
 
 export type Team = {
     name: string,
@@ -11,31 +12,48 @@ type Props = {
     team: Team,
     showDeleteButton: boolean,
     onNameChange: (n: string) => void,
-    onChange: (t: Team) => void
+    onChange: (t: Team) => void,
+    teamIndex: number
 }
 
-export default function TeamElem({ team, onNameChange, onChange, showDeleteButton }: Props) {
-    function removePerson(indexP: number): void {
-        team.people.splice(indexP, 1);
-        onChange(team);
-    }
+export default function TeamElem({ team, onNameChange, onChange, showDeleteButton, teamIndex }: Props) {
+    const [isDragging, setDragging] = useState(false);
+
+    const removePerson = useCallback((pIndex: number) => {
+        const newTeam = { ...team }
+        newTeam.people.splice(pIndex, 1);
+        onChange(newTeam);
+    }, [team, onChange]);
+    const addPerson = useCallback((item: Person) => {
+        const newTeam = { ...team }
+        newTeam.people.push(item)
+        onChange(newTeam)
+    }, [team, onChange])
 
     const [{ isOver }, drop] = useDrop(() => ({
         accept: 'person',
-        drop: (item: Person) => {
-            team.people.push(item)
+        drop: (item: PersonDragPayload, monitor) => {
+            if (item.sourceTeamIndex != teamIndex) {
+                addPerson(item.person);
+            }
         },
         collect: (monitor: any) => ({
             isOver: !!monitor.isOver(),
         }),
-    }))
+    }), [addPerson, teamIndex])
 
     return <div ref={drop} class={classNames({ isOver: isOver })}>
         <h3><input type="text" value={team.name} onChange={e => onNameChange(e.currentTarget.value)} />
             {showDeleteButton && <button>🗑</button>}
         </h3>
         {team.people.map((person, indexP) =>
-            <PersonElem onRemove={() => removePerson(indexP)}
+            <PersonElem onRemove={_ => removePerson(indexP)}
+                onDrop={(_, sourceTeam) => {
+                    if (sourceTeam != teamIndex) {
+                        removePerson(indexP);
+                    }
+                }}
+                teamIndex={teamIndex}
                 person={person}
             />
         )}

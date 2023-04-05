@@ -7,17 +7,34 @@ export type Person = {
 };
 type Props = {
     person: Person,
-    onRemove: () => void
+    onRemove: (p: Person) => void
+    teamIndex: number
+    onDrop: (p: Person, sourceTeam: number) => void
 }
 
-export default function PersonElem({ person, onRemove }: Props) {
+export type PersonDragPayload = {
+    person: Person,
+    sourceTeamIndex: number
+}
+
+export default function PersonElem({ person, onRemove, teamIndex, onDrop }: Props) {
     const [{ isDragging }, drag] = useDrag(() => ({
         type: 'person',
-        item: person,
-        collect: (monitor: any) => ({
-            isDragging: !!monitor.isDragging(),
-        }),
-    }))
+        item: {
+            person,
+            sourceTeamIndex: teamIndex
+        },
+        end(_, monitor) {
+            if (monitor.didDrop()) {
+                onDrop(person, teamIndex);
+            }
+        },
+        collect: (monitor: any) => {
+            return ({
+                isDragging: !!monitor.isDragging(),
+            });
+        },
+    }), [onRemove, onDrop, person, teamIndex])
 
     return <div class={classNames({
         person: true,
@@ -30,7 +47,7 @@ export default function PersonElem({ person, onRemove }: Props) {
             alt="Osoba"
         />
         <span>{person.name}</span>&ensp;
-        <button onClick={onRemove}>🗑</button>
+        <button onClick={() => onRemove(person)}>🗑</button>
         <br />
     </div >
 }
