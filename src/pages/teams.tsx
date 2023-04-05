@@ -159,7 +159,7 @@ export default class Teams extends Component<Props, State> {
                                             ApiLayer.updateTeams(globalState.selectedEventID!, [teams[sourceTeam].id!], [JSON.stringify(teams[sourceTeam].people)], [teams[sourceTeam].name]);
                                         }
                                     }}
-                                    showDeleteButton={state.teams!.length > 1}
+                                    showDeleteButton={true}
                                     onDelete={async () => {
                                         const teams = [...state.teams!];
                                         teams.splice(indexT, 1);
