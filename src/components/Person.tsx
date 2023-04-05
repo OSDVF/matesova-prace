@@ -43,7 +43,7 @@ export default function PersonElem({ person, onRemove, teamIndex, onDrop }: Prop
         ref={drag}
     >
         <img
-            src="/person.svg"
+            src={import.meta.env.BASE_URL + 'person.svg'}
             alt="Osoba"
         />
         <span>{person.name}</span>&ensp;

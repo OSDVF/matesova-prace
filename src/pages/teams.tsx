@@ -1,13 +1,11 @@
-import { Component, JSX } from "preact";
+import { Component } from "preact";
 import '../styles/teams.scss'
-import classNames from "classnames";
 import { useContext } from "preact/hooks";
 import { AppStateContext } from "../plugins/state";
 import { application } from "../api/api.types";
 import { Link } from "preact-router";
 import Routes from "../plugins/routes";
 import linkState from "linkstate";
-import { Person } from "../components/Person";
 import TeamElem, { Team } from "../components/Team";
 import { DndProvider } from 'react-dnd-multi-backend'
 import { HTML5toTouch } from 'rdndmb-html5-to-touch'
