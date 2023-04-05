@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import dnd from "preact-dnd";
+import { useDrag } from "react-dnd";
 
 export type Person = {
     name: string,
@@ -11,10 +11,10 @@ type Props = {
 }
 
 export default function PersonElem({ person, onRemove }: Props) {
-    const [{ isDragging }, drag] = dnd.useDrag(() => ({
+    const [{ isDragging }, drag] = useDrag(() => ({
         type: 'person',
         item: person,
-        collect: monitor => ({
+        collect: (monitor: any) => ({
             isDragging: !!monitor.isDragging(),
         }),
     }))

@@ -1,4 +1,4 @@
-import { useDrop } from "preact-dnd"
+import { useDrop } from "react-dnd"
 import PersonElem, { Person } from "./Person"
 import classNames from "classnames"
 
@@ -20,12 +20,12 @@ export default function TeamElem({ team, onNameChange, onChange, showDeleteButto
         onChange(team);
     }
 
-    const [{ isOver }, drop] = dnd.useDrop(() => ({
+    const [{ isOver }, drop] = useDrop(() => ({
         accept: 'person',
-        drop: (item) => {
-            team.people.push(item as Person)
+        drop: (item: Person) => {
+            team.people.push(item)
         },
-        collect: monitor => ({
+        collect: (monitor: any) => ({
             isOver: !!monitor.isOver(),
         }),
     }))

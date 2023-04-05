@@ -17,9 +17,12 @@
     "linkstate": "^2.0.1",
     "preact": "^10.11.3",
     "preact-custom-element": "^4.2.1",
-    "preact-dnd": "^2.1.6",
     "preact-global-state": "^1.0.5",
     "preact-router": "^4.1.0",
+    "rdndmb-html5-to-touch": "^8.0.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-multi-backend": "^8.0.0",
+    "react-dnd-touch-backend": "^16.0.1",
     "renette-api": "git+https://gitlab.com/osdvf/renette-api.git",
     "ts-transformer-keys": "^0.4.4"
   },

@@ -7,9 +7,10 @@ import { application } from "../api/api.types";
 import { Link } from "preact-router";
 import Routes from "../plugins/routes";
 import linkState from "linkstate";
-import dnd from 'preact-dnd'
-import PersonElem, { Person } from "../components/Person";
+import { Person } from "../components/Person";
 import TeamElem, { Team } from "../components/Team";
+import { DndProvider } from 'react-dnd-multi-backend'
+import { HTML5toTouch } from 'rdndmb-html5-to-touch'
 
 type Props = {
 
@@ -86,27 +87,29 @@ export default class Teams extends Component<Props, State> {
                     <input type="text" size={4} value={state.targetPeopleCount} onChange={linkState(this, 'targetPeopleCount')} />
                 </label>
                 <div class="teams">
-                    {
-                        state.teams.map((team, indexT) =>
-                            <TeamElem
-                                onNameChange={n => {
-                                    const teams = state.teams;
-                                    teams[indexT].name = n
-                                    this.setState({
-                                        teams
-                                    })
-                                }}
-                                onChange={t => {
-                                    const teams = state.teams;
-                                    teams[indexT] = t;
-                                    this.setState({
-                                        teams
-                                    })
-                                }}
-                                showDeleteButton={state.teams.length > 1}
-                                team={team}
-                            />
-                        )}
+                    <DndProvider options={HTML5toTouch}>
+                        {
+                            state.teams.map((team, indexT) =>
+                                <TeamElem
+                                    onNameChange={n => {
+                                        const teams = state.teams;
+                                        teams[indexT].name = n
+                                        this.setState({
+                                            teams
+                                        })
+                                    }}
+                                    onChange={t => {
+                                        const teams = state.teams;
+                                        teams[indexT] = t;
+                                        this.setState({
+                                            teams
+                                        })
+                                    }}
+                                    showDeleteButton={state.teams.length > 1}
+                                    team={team}
+                                />
+                            )}
+                    </DndProvider>
                 </div ></> :
                 <>Loading applications</>
             }
