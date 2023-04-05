@@ -50,6 +50,14 @@
             }
         }
     }
+    h3 > input {
+        border: none;
+        background: transparent;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        display: inline;
+    }
 }
 
 .friends {

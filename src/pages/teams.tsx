@@ -32,7 +32,9 @@ export default class Teams extends Component<Props, State> {
     }
 
     removePerson(team: number, person: number) {
-
+        const teams = this.state.teams;
+        teams[team].people.splice(person, 1);
+        this.setState({ teams });
     }
 
     static arrayRange(start: number, stop: number, step: number) {
@@ -87,13 +89,13 @@ export default class Teams extends Component<Props, State> {
                 <div class="teams">
                     {
                         state.teams.map((team, indexT) => <div>
-                            <h3 contentEditable={true} onChange={e => {
+                            <h3><input type="text" value={team.name} onChange={e => {
                                 const teams = state.teams;
-                                teams[indexT].name = e.currentTarget.childNodes[0].textContent || team.name
+                                teams[indexT].name = e.currentTarget.value || team.name
                                 this.setState({
                                     teams
                                 })
-                            }}>{team.name}
+                            }} />
                                 {state.teams.length > 1 && <button>🗑</button>}
                             </h3>
                             {team.people.map((person, indexP) =>
