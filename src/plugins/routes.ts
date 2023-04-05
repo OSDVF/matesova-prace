@@ -11,7 +11,11 @@ class Routes {
     }
 
     static go(to: string, replace?: boolean) {
-        return route(Routes.link(to), replace);
+        const url = this.link(to);
+        route(url, replace);
+        if (import.meta.env.BASE_URL.length > 2) {
+            window.history.pushState(null, '', location.origin + url);
+        }
     }
 };
 

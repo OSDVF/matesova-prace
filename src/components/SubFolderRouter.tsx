@@ -76,7 +76,6 @@ export class SubfolderRouter extends Router {
                 ...state,
                 url: state.url.substr(import.meta.env.BASE_URL.length),
             };
-            this.setState(state)
         }
         return <>{super.render(props, state)}
             {
