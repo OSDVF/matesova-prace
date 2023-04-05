@@ -77,15 +77,19 @@ export default class Teams extends Component<Props, State> {
         }
 
         return <>
-            <h1>Teams</h1>
-            <Link href={Routes.link(Routes.Home)}>Back to home</Link><br />
+            <div class="no-print">
+                <h1>Teams</h1>
+                <Link href={Routes.link(Routes.Home)}>Back to home</Link>
+            </div>
             {globalState.applications !== null ? <>
-                <button onClick={() => this.randomize(globalState.applications!)}>Randomize</button>
-                <br />
-                <label>
-                    Target people count in one team:&nbsp;
-                    <input type="text" size={4} value={state.targetPeopleCount} onChange={linkState(this, 'targetPeopleCount')} />
-                </label>
+                <div class="no-print">
+                    <button onClick={() => this.randomize(globalState.applications!)}>Randomize</button>
+                    <br />
+                    <label>
+                        Target people count in one team:&nbsp;
+                        <input type="text" size={4} value={state.targetPeopleCount} onChange={linkState(this, 'targetPeopleCount')} />
+                    </label>
+                </div>
                 <div class="teams">
                     <DndProvider options={HTML5toTouch}>
                         {

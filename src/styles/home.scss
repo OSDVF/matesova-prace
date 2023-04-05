@@ -49,3 +49,14 @@ label.info {
     top: 0;
     right: 0;
 }
+
+.hide {
+    position: absolute;
+    opacity: 0;
+    z-index: -100;
+    white-space: pre;
+}
+
+input {
+    min-width: 1px;
+}

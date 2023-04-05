@@ -2,6 +2,7 @@ import { useDrop } from "react-dnd"
 import PersonElem, { Person, PersonDragPayload } from "./Person"
 import classNames from "classnames"
 import { useCallback, useState } from "preact/hooks"
+import InputAutoSize from "./InputAutoSize"
 
 export type Team = {
     name: string,
@@ -43,7 +44,7 @@ export default function TeamElem({ team, onNameChange, onChange, showDeleteButto
     }), [addPerson, teamIndex])
 
     return <div ref={drop} class={classNames({ isOver: isOver })}>
-        <h3><input type="text" value={team.name} onChange={e => onNameChange(e.currentTarget.value)} />
+        <h3><InputAutoSize value={team.name} onChange={e => onNameChange(e.currentTarget.value)} />
             {showDeleteButton && <button>🗑</button>}
         </h3>
         {team.people.map((person, indexP) =>

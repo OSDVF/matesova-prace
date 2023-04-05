@@ -67,3 +67,11 @@
             #2e8a0025 3px,
             #2e8a0025 6px);
 }
+
+@media print
+{    
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+}
