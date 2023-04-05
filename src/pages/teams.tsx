@@ -31,8 +31,6 @@ export default class Teams extends Component<Props, State> {
         }
     }
 
-
-
     removePerson(team: number, person: number) {
 
     }
@@ -45,12 +43,12 @@ export default class Teams extends Component<Props, State> {
     }
 
     randomize(applications: application[]) {
-        const indexesToVisit = Teams.arrayRange(0, applications.length, 1);
+        const indexesToVisit = Teams.arrayRange(0, applications.length - 1, 1);
         const teams: Team[] = [];
         while (indexesToVisit.length > 0) {
             const pickedIndex = getRandomInt(0, indexesToVisit.length - 1);
+            let pickedPerson = applications[indexesToVisit[pickedIndex]];
             indexesToVisit.splice(pickedIndex, 1);
-            const pickedPerson = applications[pickedIndex];
             let currentTeam = teams[teams.length - 1]
             if (currentTeam == null || currentTeam.people.length >= this.state.targetPeopleCount) {
                 teams.push({
@@ -67,9 +65,14 @@ export default class Teams extends Component<Props, State> {
         });
     }
 
+    private subscribed = false;
+
     render(props: Readonly<Props>, state: Readonly<State>) {
         const globalState = useContext(AppStateContext);
-        globalState.onChange = () => this.setState({});
+        if (!this.subscribed) {
+            this.subscribed = true;
+            globalState.onChange = () => this.setState({});
+        }
 
         return <>
             <h1>Teams</h1>

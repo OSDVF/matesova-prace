@@ -8,6 +8,7 @@ import { AppStateContext } from "../plugins/state";
 
 export class SubfolderRouter extends Router {
     public static handler: JSXInternal.Element;
+    private subscribed = false;
 
     constructor(props: RouterProps) {
         super(props)
@@ -32,7 +33,11 @@ export class SubfolderRouter extends Router {
             Sentry.captureException(error);
         });
         const globalState = useContext(AppStateContext);
-        globalState.onChange = () => this.setState({});
+        if(!this.subscribed)
+        {
+            this.subscribed = true;
+            globalState.onChange = () => this.setState({});
+        }
 
         if (error) {
             return (

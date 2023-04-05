@@ -7,7 +7,17 @@ export class AppState {
     public applications: application[] | null = null;
     public events: futureEvent[] = [];
     public selectedEventID: number | null = null;
-    public onChange?: (() => void) | undefined;
+    private subscribed: (() => void)[] = []
+    public get onChange() {
+        return (() => {
+            for (const handler of this.subscribed) {
+                handler();
+            }
+        })
+    }
+    public set onChange(handler) {
+        this.subscribed.push(handler)
+    }
     private initializing = false;
     private gettingEvents = false;
 

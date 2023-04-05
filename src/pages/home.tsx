@@ -43,6 +43,7 @@ type State = {
 };
 
 export class Home extends Component<Props, State> {
+  private subscribed = false;
   constructor(props: Props) {
     super(props);
 
@@ -59,7 +60,10 @@ export class Home extends Component<Props, State> {
   }
   render(props: Props, state: Readonly<State>) {
     const globalState = useContext(AppStateContext);
-    globalState.onChange = () => this.setState({});
+    if (!this.subscribed) {
+      this.subscribed = true;
+      globalState.onChange = () => this.setState({});
+    }
 
     return <>
       <Legend
