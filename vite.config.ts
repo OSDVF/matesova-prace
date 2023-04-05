@@ -28,5 +28,11 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  define: {
+    APP_DATE: JSON.stringify(new Date().toLocaleString()),
+  },
+  build: {
+    sourcemap: true,
+  }
 })

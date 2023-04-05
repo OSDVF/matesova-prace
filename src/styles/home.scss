@@ -41,3 +41,11 @@ label.info {
         background: darken($halfGray, 20%);
     }
 }
+
+.appVersion {
+    font-size: .8rem;
+    color: $halfGray;
+    position: absolute;
+    top: 0;
+    right: 0;
+}

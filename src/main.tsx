@@ -8,12 +8,13 @@ import Teams from './pages/teams';
 import Routes from './plugins/routes';
 
 
-const Main = () => (
+const Main = () => <>
+    <div class="appVersion">Verze {APP_DATE}</div>
     <SubfolderRouter>
         <Route path={Routes.Home} component={Home} />
         <Route path={Routes.Teams} component={Teams} />
     </SubfolderRouter>
-);
+</>;
 
 render(
     <AppStateContext.Provider value={new AppState()}>
