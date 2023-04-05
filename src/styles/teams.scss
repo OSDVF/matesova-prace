@@ -1,0 +1,61 @@
+.teams {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    &>div {
+        border: 2px dashed darkblue;
+        background: repeating-linear-gradient(45deg,
+                #00008b30,
+                #00008b30 3px,
+                #00008b25 3px,
+                #00008b25 6px);
+        border-radius: 7px;
+        padding: 0 .5em .5em .5em;
+    }
+
+    .person {
+        user-select: none;
+
+        img {
+            margin-right: 5px;
+        }
+
+        * {
+            vertical-align: middle;
+        }
+
+        padding: 3px;
+        border-radius: 5px;
+
+        &:hover {
+            opacity: .9;
+            border: 1.5px solid #ffffff66;
+            margin: -0.75px;
+            background: #ffffff44;
+        }
+    }
+
+    div>h3,
+    .person {
+        button {
+            visibility: hidden;
+        }
+
+        &:hover,
+        &:focus,
+        &:focus-within {
+            button {
+                visibility: visible;
+            }
+        }
+    }
+}
+
+.friends {
+    background: repeating-linear-gradient(45deg,
+            #2e8a0030,
+            #2e8a0030 3px,
+            #2e8a0025 3px,
+            #2e8a0025 6px);
+}

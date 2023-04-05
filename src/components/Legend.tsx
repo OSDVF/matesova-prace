@@ -1,5 +1,7 @@
 import { JSXInternal } from 'preact/src/jsx';
 import { futureEvent } from '../api/api.types';
+import { route } from 'preact-router';
+import Routes from '../plugins/routes';
 
 type Props = {
     onSelectEvent: JSXInternal.GenericEventHandler<HTMLSelectElement>
@@ -38,6 +40,7 @@ export function Legend({ onSelectEvent, events, selectedEventID, loginHandler }:
         </label>
         <label className="info">Applications from: <span>{toLocalDate(getSelectedEvent()?.appBegin)}</span></label>
         <label className="info">To: <span>{toLocalDate(getSelectedEvent()?.appEnd)}</span></label>
+        <label className="info"><button onClick={() => route(Routes.Teams)}>Generate groups</button></label>
         {loginHandler}
     </div>
 

@@ -17,6 +17,8 @@ import { Legend } from '../components/Legend';
 import { JSXInternal } from 'preact/src/jsx';
 import classNames from 'classnames';
 import { AppStateContext } from '../plugins/state';
+import { useRouter } from 'preact-router';
+import { SubfolderRouter } from '../components/SubFolderRouter';
 
 if (import.meta.env.PROD) {
   Sentry.init({
@@ -37,27 +39,17 @@ type Props = {
 };
 type State = {
   errorMessage: string | null,
-  loggedIn: boolean,
   truncateCells: boolean
 };
 
 export class Home extends Component<Props, State> {
-  private handler: JSXInternal.Element;
-
   constructor(props: Props) {
     super(props);
 
     this.state = {
       errorMessage: null,
-      loggedIn: false,
       truncateCells: true
     };
-
-    this.handler = <LoginHandler
-      allowedDomain='travna.cz'
-      logInPromptText='Log in firstly using your @travna account'
-      onLoggedIn={() => this.setState({ loggedIn: true })}
-    />
   }
   makeErrorMessage(response: receivedData<any>): string {
     Sentry.captureEvent({
@@ -65,69 +57,21 @@ export class Home extends Component<Props, State> {
     });
     return `Error (code ${response.code}) while performing ${response.action}: ${JSON.stringify(response.data)}`;
   }
-  showError(e: any) {
-    this.setState({
-      errorMessage: `Failed to fetch data. Details: ${JSON.stringify(e)}`
-    })
-    Sentry.captureException(e);
-  }
   render(props: Props, state: Readonly<State>) {
-    const [error, resetError] = useErrorBoundary(error => {
-      Sentry.captureException(error);
-    });
     const globalState = useContext(AppStateContext);
     globalState.onChange = () => this.setState({});
-
-    if (error) {
-      return (
-        <Fragment>
-          <h1>Error</h1>
-          <p>An error occurred.</p>
-          <small>Reason: {error.message.toString()}
-            <details>Details: {JSON.stringify(error)}</details>
-          </small>
-          <button onClick={resetError}>Try again</button>
-        </Fragment>
-      );
-    }
-
-    if (!state.loggedIn) {
-      return <div>{this.handler}</div>;
-    }
-
-    try {
-      if (globalState.selectedEventID != null && globalState.applications == null) {
-        globalState.fetchApplications();
-      }
-      else {
-        globalState.init().then(() => {
-          globalState.selectedEventID = globalState.selectedEventID ?? globalState.events.length == 1 ? globalState.events[0].eventID : null
-          globalState.onChange!();
-        }
-        );
-      }
-    }
-    catch (e) {
-      this.showError(e)
-    }
 
     return <>
       <Legend
         events={globalState.events}
         onSelectEvent={linkState(this, 'selectedEventID')}
         selectedEventID={globalState.selectedEventID}
-        loginHandler={this.handler}
+        loginHandler={SubfolderRouter.handler}
       />
       <div className="legend">
         <strong>Statistics</strong><label className="info">People count: <span>{globalState.applications?.length}</span></label>
         <label className="info">Wrap text: <input type="checkbox" checked={!state.truncateCells} onChange={() => this.setState({ truncateCells: !state.truncateCells })} /></label>
       </div>
-      {
-        state.errorMessage != null ?
-          <output className="text-error">
-            {state.errorMessage}
-          </output> : ''
-      }
       {globalState.applications !== null && <Table
         className={
           classNames({
