@@ -5,6 +5,7 @@ import { useCallback, useState } from "preact/hooks"
 import InputAutoSize from "./InputAutoSize"
 
 export type Team = {
+    id: number | null,
     name: string,
     people: Person[]
 }
@@ -14,10 +15,12 @@ type Props = {
     showDeleteButton: boolean,
     onNameChange: (n: string) => void,
     onChange: (t: Team) => void,
+    onDelete: () => void,
+    onDrop: (p: Person, sourceTeam: number) => void,
     teamIndex: number
 }
 
-export default function TeamElem({ team, onNameChange, onChange, showDeleteButton, teamIndex }: Props) {
+export default function TeamElem({ team, onNameChange, onChange, showDeleteButton, teamIndex, onDelete, onDrop }: Props) {
     const [isDragging, setDragging] = useState(false);
 
     const removePerson = useCallback((pIndex: number) => {
@@ -36,6 +39,7 @@ export default function TeamElem({ team, onNameChange, onChange, showDeleteButto
         drop: (item: PersonDragPayload, monitor) => {
             if (item.sourceTeamIndex != teamIndex) {
                 addPerson(item.person);
+                onDrop(item.person, item.sourceTeamIndex);
             }
         },
         collect: (monitor: any) => ({
@@ -45,7 +49,7 @@ export default function TeamElem({ team, onNameChange, onChange, showDeleteButto
 
     return <div ref={drop} class={classNames({ isOver: isOver })}>
         <h3><InputAutoSize value={team.name} onChange={e => onNameChange(e.currentTarget.value)} />
-            {showDeleteButton && <button>🗑</button>}
+            {showDeleteButton && <button onClick={onDelete}>🗑</button>}
         </h3>
         {team.people.map((person, indexP) =>
             <PersonElem onRemove={_ => removePerson(indexP)}

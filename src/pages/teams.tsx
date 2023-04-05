@@ -11,12 +11,13 @@ import { Person } from "../components/Person";
 import TeamElem, { Team } from "../components/Team";
 import { DndProvider } from 'react-dnd-multi-backend'
 import { HTML5toTouch } from 'rdndmb-html5-to-touch'
+import ApiLayer from "../api/api";
 
 type Props = {
 
 };
 type State = {
-    teams: Team[],
+    teams: Team[] | null,
     targetPeopleCount: number
 };
 export default class Teams extends Component<Props, State> {
@@ -26,14 +27,14 @@ export default class Teams extends Component<Props, State> {
         super(props)
 
         this.state = {
-            teams: [],
+            teams: null,
             targetPeopleCount: 7
         }
     }
 
     removePerson(team: number, person: number) {
         const teams = this.state.teams;
-        teams[team].people.splice(person, 1);
+        teams![team].people.splice(person, 1);
         this.setState({ teams });
     }
 
@@ -54,6 +55,7 @@ export default class Teams extends Component<Props, State> {
             let currentTeam = teams[teams.length - 1]
             if (currentTeam == null || currentTeam.people.length >= this.state.targetPeopleCount) {
                 teams.push({
+                    id: null,
                     name: 'Team ' + (teams.length + 1).toString(),
                     people: []
                 })
@@ -76,6 +78,24 @@ export default class Teams extends Component<Props, State> {
             globalState.onChange = () => this.setState({});
         }
 
+        if (state.teams == null && globalState.selectedEventID != null) {
+            ApiLayer.getTeams(globalState.selectedEventID).then(response => {
+                const teams: Team[] = [];
+                if (response.data.teams != null) {
+                    for (let team of response.data.teams) {
+                        teams.push({
+                            id: team.teamID,
+                            name: team.name,
+                            people: JSON.parse(team.data)
+                        })
+                    }
+                }
+                this.setState({
+                    teams
+                })
+            });
+        }
+
         return <>
             <div class="no-print">
                 <h1>Teams</h1>
@@ -93,24 +113,65 @@ export default class Teams extends Component<Props, State> {
                 <div class="teams">
                     <DndProvider options={HTML5toTouch}>
                         {
-                            state.teams.map((team, indexT) =>
+                            state.teams?.map((team, indexT) =>
                                 <TeamElem
                                     teamIndex={indexT}
-                                    onNameChange={n => {
-                                        const teams = [...state.teams];
+                                    onNameChange={async n => {
+                                        const teams = [...state.teams!];
                                         teams[indexT].name = n
+                                        if (team.id == null) {
+                                            const result = await ApiLayer.updateTeams(globalState.selectedEventID!, null, [JSON.stringify(team.people)], [n]);
+                                            if (result.data.created.length > 0) {
+                                                teams[indexT].id = result.data.created[0];
+                                            }
+                                        }
+                                        else {
+                                            ApiLayer.updateTeams(globalState.selectedEventID!, [team.id], null, [n]);
+                                        }
                                         this.setState({
                                             teams
                                         })
                                     }}
-                                    onChange={t => {
-                                        const teams = [...state.teams];
+                                    onChange={async t => {
+                                        const teams = [...state.teams!];
                                         teams[indexT] = t;
+                                        if (t.id == null) {
+                                            const result = await ApiLayer.updateTeams(globalState.selectedEventID!, null, [JSON.stringify(t.people)], [t.name]);
+                                            if (result.data.created.length > 0) {
+                                                teams[indexT].id = result.data.created[0];
+                                            }
+                                        }
+                                        else {
+                                            ApiLayer.updateTeams(globalState.selectedEventID!, [t.id], [JSON.stringify(t.people)], [t.name]);
+                                        }
                                         this.setState({
                                             teams
                                         })
                                     }}
-                                    showDeleteButton={state.teams.length > 1}
+                                    onDrop={async (p, sourceTeam) => {
+                                        const teams = [...state.teams!];
+                                        teams[sourceTeam].people = teams[sourceTeam].people.filter(x => x.name != p.name);
+                                        if (teams[sourceTeam].id == null) {
+                                            const result = await ApiLayer.updateTeams(globalState.selectedEventID!, null, [JSON.stringify(teams[sourceTeam].people)], [teams[sourceTeam].name]);
+                                            if (result.data.created.length > 0) {
+                                                teams[indexT].id = result.data.created[0];
+                                            }
+                                        }
+                                        else {
+                                            ApiLayer.updateTeams(globalState.selectedEventID!, [teams[sourceTeam].id!], [JSON.stringify(teams[sourceTeam].people)], [teams[sourceTeam].name]);
+                                        }
+                                    }}
+                                    showDeleteButton={state.teams!.length > 1}
+                                    onDelete={async () => {
+                                        const teams = [...state.teams!];
+                                        teams.splice(indexT, 1);
+                                        if (team.id != null) {
+                                            ApiLayer.updateTeams(globalState.selectedEventID!, [team.id], [], null);
+                                        }
+                                        this.setState({
+                                            teams
+                                        })
+                                    }}
                                     team={team}
                                 />
                             )}
@@ -119,104 +180,6 @@ export default class Teams extends Component<Props, State> {
                 <>Loading applications</>
             }
         </>
-    }
-    onDropPerson(evt: JSX.TargetedDragEvent<HTMLDivElement>, indexT: number, indexP: number): void {
-        this.dragging = false;
-        if (evt.dataTransfer == null) return;
-        const { draggedT, draggedP } = JSON.parse(
-            evt.dataTransfer.getData('indexes')
-        );
-
-        var draggedPerson = this.state.teams[draggedT]?.people[draggedP];
-        if (!this.state.teams[indexT].people) {
-            this.state.teams[indexT].people = [];
-        }
-        const draggedF = undefined;
-        if (typeof draggedF != 'undefined') {
-            if (!this.state.teams[indexT].people[indexP].friends) {
-                this.state.teams[indexT].people[indexP].friends = [];
-            }
-            this.state.teams[indexT].people[indexP].friends.push(
-                draggedPerson.friends[draggedF]
-            );
-            draggedPerson.friends.splice(draggedF, 1);
-        }
-        else {
-            if (indexT == draggedT && indexP == draggedP) {
-                return;//Dragged to same person
-            }
-
-            // Flatten friends array
-            var friendsToAdd: Person[] = [];
-            if (draggedPerson.friends?.length > 0) {
-                friendsToAdd = draggedPerson.friends;
-            }
-            if (!this.state.teams[indexT].people[indexP].friends) {
-                this.state.teams[indexT].people[indexP].friends = [];
-            }
-            this.state.teams[indexT].people[indexP].friends.push(
-                {
-                    name: draggedPerson.name,
-                    friends: []
-                }
-            );
-            for (var previousFriend of friendsToAdd) {
-                this.state.teams[indexT].people[indexP].friends.push(
-                    previousFriend);
-            }
-            this.state.teams[draggedT].people.splice(draggedP, 1);
-        }
-    }
-    startDrag(evt: JSX.TargetedDragEvent<HTMLDivElement>, indexT: number, indexP: number): void {
-        if (!this.dragging) {
-            this.dragging = true;
-            if (evt.dataTransfer != null) {
-                evt.dataTransfer.dropEffect = 'move'
-                evt.dataTransfer.effectAllowed = 'move'
-                evt.dataTransfer.setData('indexes', JSON.stringify(
-                    {
-                        draggedT: indexT,
-                        draggedP: indexP
-                    }
-                ));
-            }
-        }
-    }
-    onDropTeam(evt: JSX.TargetedDragEvent<HTMLDivElement>, indexT: any): void {
-        this.dragging = false;
-        if (evt.dataTransfer == null) return;
-        const { draggedT, draggedP, draggedF } = JSON.parse(
-            evt.dataTransfer.getData('indexes')
-        );
-
-        var draggedPerson = (this.state.teams[draggedT]?.people ?? [])[draggedP];
-        if (!this.state.teams[indexT].people) {
-            this.state.teams[indexT].people = [];
-        }
-        if (typeof draggedPerson != 'undefined') {
-            //If the dragged item still exists
-            if (draggedT == indexT)
-                return;//Dragged to same team
-
-            if (typeof draggedF != 'undefined') {
-                if (!draggedPerson.friends) {
-                    draggedPerson.friends = [];
-                }
-                var draggedFriend = draggedPerson.friends[draggedF];
-                if (typeof draggedFriend != 'undefined') {
-                    this.state.teams[indexT].people.push(
-                        draggedFriend
-                    );
-                    this.state.teams[draggedT].people[draggedP].friends.splice(draggedF, 1);
-                }
-            }
-            else {
-                this.state.teams[indexT].people.push(
-                    this.state.teams[draggedT].people[draggedP]
-                );
-                this.state.teams[draggedT].people.splice(draggedP, 1);
-            }
-        }
     }
 }
 

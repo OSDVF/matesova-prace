@@ -9,7 +9,7 @@ type ValueType =
     | undefined
     | JSXInternal.SignalLike<string | string[] | number | undefined>;
 
-export default function ({ value, onChange }: { value: ValueType, onChange: (e: JSXInternal.TargetedEvent<HTMLInputElement>) => void }) {
+export default function InputAutoSize ({ value, onChange }: { value: ValueType, onChange: (e: JSXInternal.TargetedEvent<HTMLInputElement>) => void }) {
     const [width, setWidth] = useState(0);
     const span = createRef<HTMLSpanElement>();
 
@@ -20,7 +20,7 @@ export default function ({ value, onChange }: { value: ValueType, onChange: (e: 
     return (
         <>
             <span className="hide" ref={span}>{value}</span>
-            <input value={value} type="text" style={{ width }} autoFocus onChange={onChange} />
+            <input value={value} type="text" style={{ width }} onChange={onChange} />
         </>
     );
 };

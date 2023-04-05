@@ -1,6 +1,6 @@
 import CAPI from "renette-api";
 import { receivedData } from "renette-api/dist/types"
-import { application, futureEvent, futureEventInData } from "./api.types";
+import { TeamUpdateResponse, TeamsData, application, futureEvent, futureEventInData } from "./api.types";
 
 const API = new CAPI();
 API.setConfig({
@@ -37,7 +37,7 @@ export default class ApiLayer {
         ));
     }
 
-    static async resendEmail(appID: number) : Promise<receivedData<any>> {
+    static async resendEmail(appID: number): Promise<receivedData<any>> {
         await this.lastRequest;
         return (this.lastRequest = API.post(
             {
@@ -45,6 +45,34 @@ export default class ApiLayer {
                 action: 'resendMail',
                 data: {
                     appID
+                }
+            }
+        ));
+    }
+
+    static async getTeams(eventID: number): Promise<receivedData<TeamsData>> {
+        await this.lastRequest;
+        return (this.lastRequest = API.post(
+            {
+                resource: 'get',
+                action: 'getTeams',
+                data: {
+                    eventID
+                }
+            }
+        ));
+    }
+
+    static async updateTeams(eventID: number, teamIDs: number[] | null, data: string[] | null, names: string[] | null): Promise<receivedData<TeamUpdateResponse>> {
+        return (this.lastRequest = API.post(
+            {
+                resource: 'manageApp',
+                action: 'updateTeams',
+                data: {
+                    eventID,
+                    teamIDs,
+                    data,
+                    names
                 }
             }
         ));

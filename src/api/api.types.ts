@@ -64,3 +64,20 @@ export type formConfig = {
     departures: TSelectOption[]
     arrivals: TSelectOption[]
 };
+
+export type TeamData = {
+    eventID: number,
+    teamID: number,
+    name: string,
+    data: string
+};
+
+export type TeamsData = {
+    teams: TeamData[]
+}
+
+export type TeamUpdateResponse = {
+    created: number[],
+    updated: number[],
+    deleted: number[] 
+}
