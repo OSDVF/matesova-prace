@@ -218,7 +218,8 @@ export function Table<RowType extends (RowWithAction<RowType> | any)>({
                             }
                             for (let field of fields) {
                                 if ((field.show ?? true) && Object.hasOwn(row as object, field.propName)) {
-                                    items.push(<td tabIndex={0}><div>{row[field.propName as keyof RowType] as string}</div></td>);
+                                    const content = row[field.propName as keyof RowType];
+                                    items.push(<td tabIndex={0}><div>{content instanceof Date ? content.toLocaleDateString() : (content ?? {} as object).toString()}</div></td>);
                                 }
                             }
                             return <tr>{items}</tr>;

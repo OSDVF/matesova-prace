@@ -6,6 +6,8 @@ import { AppStateContext } from "../plugins/state";
 import { ApplicationState, application } from "../api/api.types";
 import InputAutoSize from "../components/InputAutoSize";
 import linkState from "linkstate";
+import { Link } from "preact-router";
+import Routes from "../plugins/routes";
 
 type Props = {
 
@@ -27,7 +29,7 @@ interface SchemaInterface {
     'Zbývá zaplatit': number | null;
     Podpis: null;
     'Sleva/Podpora': string;
-    Poznámka: string;
+    Poznámka: string | undefined;
 }
 
 class Schema implements SchemaInterface {
@@ -44,7 +46,7 @@ class Schema implements SchemaInterface {
     public Cena!: number;
     public Příjezd!: Date | string;
     public Odjezd!: Date | string;
-    'Počet nocí'(): number {
+    'Nocí'(): number {
         if (typeof this.Příjezd == 'string') {
             this.Příjezd = new Date(Date.parse(this.Příjezd));
         }
@@ -66,7 +68,9 @@ const stateToRemainingPrice = {
     'paid': () => 0,
     'free': () => 0,
     'new': (fullPrice: number) => fullPrice
-
+};
+const schemaWidth = {
+    Podpis: 200
 };
 
 export default class Accommodation extends Component<Props, State> {
@@ -88,7 +92,7 @@ export default class Accommodation extends Component<Props, State> {
                 const remain = stateToRemainingPrice[sourceApp.state as keyof typeof stateToRemainingPrice](sourceApp.price);
                 destApps.push(new Schema({
                     "Zbývá zaplatit": remain,
-                    Zaplaceno: sourceApp.price,
+                    Zaplaceno: sourceApp.price - remain,
                     Cena: sourceApp.price,
                     Jméno: sourceApp.name,
                     Příjmení: sourceApp.sname,
@@ -98,7 +102,7 @@ export default class Accommodation extends Component<Props, State> {
                     Věk: sourceApp.age,
                     "Sleva/Podpora": '',
                     Podpis: null,
-                    Poznámka: sourceApp.note_internal
+                    Poznámka: this.state.showNotes ? sourceApp.note_internal : undefined
                 }));
             }
         }
@@ -121,6 +125,8 @@ export default class Accommodation extends Component<Props, State> {
 
         return <>
             <div class="no-print">
+                <Link href={Routes.link(Routes.Home)}>〈 Back to application list</Link>
+                <br />
                 {globalState.applications != null ?
                     <><button onClick={() => this.loadApplications(globalState.applications!)}>Load with applications</button>
                         <label><input type="checkbox" checked={state.showNotes} onChange={linkState(this, 'showNotes')} /> Show notes</label>
@@ -134,28 +140,30 @@ export default class Accommodation extends Component<Props, State> {
             <table>
                 <thead>
                     <tr>
+                        <th>#</th>
                         {
                             schemaKeys.map(k =>
-                                <th>{k.toString()}</th>
+                                state.applications.length > 0 && typeof state.applications[0][k] != 'undefined' &&
+                                <th style={{ width: schemaWidth[k as keyof typeof schemaWidth] }}>{k.toString()}</th>
                             )
                         }
                     </tr>
                 </thead>
                 <tbody>
+
                     {state.applications.map((a, ai) =>
                         <tr>
+                            <td>{ai + 1}</td>
                             {
                                 schemaKeys.map(k =>
+                                    typeof a[k] != 'undefined' &&
                                     <td>
-                                        {typeof a[k] == 'function' ?
-                                            (a[k] as () => number)() :
-                                            <InputAutoSize value={typeof a[k] == 'object' && a[k] != null ? toMontString(a[k] as Date) : a[k]?.toString()} onChange={e => {
-                                                const a = state.applications[ai];
-                                                (a[k] as string) = e.currentTarget.value;
-                                                this.setState({});
-                                            }} />}
-                                    </td>
-                                )
+                                        <InputAutoSize value={typeof a[k] == 'function' ? (a[k] as () => number)() : typeof a[k] == 'object' && a[k] != null ? toMontString(a[k] as Date) : a[k]?.toString()} onChange={e => {
+                                            const a = state.applications[ai];
+                                            (a[k] as string) = e.currentTarget.value;
+                                            this.setState({});
+                                        }} />
+                                    </td>)
                             }
                         </tr>
                     )}
