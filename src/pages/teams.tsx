@@ -46,6 +46,10 @@ export default class Teams extends Component<Props, State> {
     }
 
     randomize(applications: application[]) {
+        if(!this.state.includeCancelled)
+        {
+            applications = applications.filter(a => a.state != ApplicationState.cancelled);
+        }
         const indexesToVisit = Teams.arrayRange(0, applications.length - 1, 1);
         const teams: Team[] = [];
         while (indexesToVisit.length > 0) {
