@@ -27,7 +27,6 @@ interface SchemaInterface {
     Odjezd: Date | string;
     'Zaplaceno': number | null;
     'Zbývá zaplatit': number | null;
-    Podpis: null;
     'Sleva/Podpora': string;
     Poznámka: string | undefined;
 }
@@ -58,7 +57,6 @@ class Schema implements SchemaInterface {
     public 'Zaplaceno'!: number | null;
     public 'Zbývá zaplatit'!: number | null;
     'Sleva/Podpora': string;
-    public Podpis!: null;
     public Poznámka!: string;
 }
 
@@ -101,7 +99,6 @@ export default class Accommodation extends Component<Props, State> {
                     Příjezd: new Date(sourceApp.arrival),
                     Věk: sourceApp.age,
                     "Sleva/Podpora": '',
-                    Podpis: null,
                     Poznámka: this.state.showNotes ? sourceApp.note_internal : undefined
                 }));
             }
