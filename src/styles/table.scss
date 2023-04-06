@@ -1,19 +1,26 @@
 @import 'definitions.scss';
+
 * {
     box-sizing: border-box;
 }
 
 header {
+    display: flex;
+}
+
+header,
+thead tr {
     position: sticky;
     top: 0;
-    display: flex;
 
-    .th {
+    .th,
+    th {
         overflow-x: auto;
         overflow-y: hidden;
         flex-shrink: 0;
         position: relative;
         vertical-align: middle;
+
         &:not(:last-child) {
             border-right: 1px solid $halfGray;
         }
@@ -36,7 +43,7 @@ header {
             background: $eightGray;
             border: 0;
             border-radius: 4px;
-    
+
             &:hover,
             &:focus {
                 background: $quarterGray;

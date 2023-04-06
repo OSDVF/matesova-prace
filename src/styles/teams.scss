@@ -1,5 +1,4 @@
-//mixin for input without border
-@mixin input-no-border {
+.input-no-border {
     border: none;
     background: transparent;
     font-size: inherit;
@@ -82,14 +81,6 @@
                 visibility: visible;
             }
         }
-
-        &>input {
-            @include input-no-border;
-        }
-    }
-
-    h3>input {
-        @include input-no-border;
     }
 }
 
@@ -99,12 +90,4 @@
             #2e8a0030 3px,
             #2e8a0025 3px,
             #2e8a0025 6px);
-}
-
-@media print {
-
-    .no-print,
-    .no-print * {
-        display: none !important;
-    }
 }

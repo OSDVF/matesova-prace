@@ -37,6 +37,11 @@ export class AppState {
             const resp = await ApiLayer.getApplicationsTable(eventId);
             if (resp.data.applications) {
                 this.applications = resp.data.applications
+                for(const app of this.applications)
+                {
+                    app.departure = new Date(app.departure)
+                    app.arrival = new Date(app.arrival)
+                }
                 this.onChange?.();
             }
             else {

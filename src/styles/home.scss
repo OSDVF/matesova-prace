@@ -62,3 +62,11 @@ label.info {
 input {
     min-width: 1px;
 }
+
+@media print {
+
+    .no-print,
+    .no-print * {
+        display: none !important;
+    }
+}

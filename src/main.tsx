@@ -6,6 +6,7 @@ import { SubfolderRouter } from './components/SubFolderRouter';
 import { AppState, AppStateContext } from './plugins/state';
 import Teams from './pages/teams';
 import Routes from './plugins/routes';
+import Accommodation from './pages/accommodation';
 
 
 const Main = () => <>
@@ -13,6 +14,7 @@ const Main = () => <>
     <SubfolderRouter>
         <Route path={Routes.Home} component={Home} />
         <Route path={Routes.Teams} component={Teams} />
+        <Route path={Routes.Accommodation} component={Accommodation} />
     </SubfolderRouter>
 </>;
 

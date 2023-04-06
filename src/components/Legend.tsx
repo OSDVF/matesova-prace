@@ -39,7 +39,8 @@ export function Legend({ onSelectEvent, events, selectedEventID, loginHandler }:
         </label>
         <label className="info">Applications from: <span>{toLocalDate(getSelectedEvent()?.appBegin)}</span></label>
         <label className="info">To: <span>{toLocalDate(getSelectedEvent()?.appEnd)}</span></label>
-        <label className="info"><button onClick={() => Routes.go(Routes.Teams)}>Generate groups</button></label>
+        <label className="info"><button onClick={() => Routes.go(Routes.Teams)}>Generate teams</button></label>
+        <label className="info"><button onClick={() => Routes.go(Routes.Accommodation)}>Generate accommodation list</button></label>
         {loginHandler}
     </div>
 

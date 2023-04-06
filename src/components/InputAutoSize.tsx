@@ -9,18 +9,18 @@ type ValueType =
     | undefined
     | JSXInternal.SignalLike<string | string[] | number | undefined>;
 
-export default function InputAutoSize ({ value, onChange }: { value: ValueType, onChange: (e: JSXInternal.TargetedEvent<HTMLInputElement>) => void }) {
+export default function InputAutoSize({ value, onChange }: { value: ValueType, onChange: (e: JSXInternal.TargetedEvent<HTMLInputElement>) => void }) {
     const [width, setWidth] = useState(0);
     const span = createRef<HTMLSpanElement>();
 
     useEffect(() => {
-        setWidth(span.current?.offsetWidth ?? 100);
+        setWidth((span.current?.offsetWidth ?? 100) * 1.1 + 5);
     }, [value, span, setWidth]);
 
     return (
         <>
             <span className="hide" ref={span}>{value}</span>
-            <input value={value} type="text" style={{ width }} onChange={onChange} />
+            <input class="input-no-border" value={value} type="text" style={{ width }} onChange={onChange} />
         </>
     );
 };
