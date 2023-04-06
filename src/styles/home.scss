@@ -1,8 +1,10 @@
 @use "sass:color";
 @import 'definitions.scss';
 
-@media (prefers-color-scheme: dark) {
-    :root {
+:root {
+    overflow-x: hidden;
+
+    @media (prefers-color-scheme: dark) {
         filter: invert(100%);
         background: white;
     }

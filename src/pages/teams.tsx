@@ -2,7 +2,7 @@ import { Component } from "preact";
 import '../styles/teams.scss'
 import { useContext } from "preact/hooks";
 import { AppStateContext } from "../plugins/state";
-import { application } from "../api/api.types";
+import { ApplicationState, application } from "../api/api.types";
 import { Link } from "preact-router";
 import Routes from "../plugins/routes";
 import linkState from "linkstate";
@@ -16,7 +16,8 @@ type Props = {
 };
 type State = {
     teams: Team[] | null,
-    targetPeopleCount: number
+    targetPeopleCount: number,
+    includeCancelled: boolean
 };
 export default class Teams extends Component<Props, State> {
     private dragging = false;
@@ -25,6 +26,7 @@ export default class Teams extends Component<Props, State> {
         super(props)
 
         this.state = {
+            includeCancelled: false,
             teams: null,
             targetPeopleCount: 7
         }
@@ -67,6 +69,44 @@ export default class Teams extends Component<Props, State> {
         });
     }
 
+    addMissing(applications: application[]) {
+        let pickedTeam = 0;
+        const teams = [...this.state.teams!]
+        const filtered = this.state.includeCancelled ? applications :
+            applications.filter(a => a.state != ApplicationState.cancelled);
+        for (let application of filtered) {
+            //add missing people
+            let found = false;
+            for (let team of teams) {
+                for (let person of team.people) {
+                    if (person.name == application.name + ' ' + application.sname) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    break;
+                }
+            }
+            if (!found) {
+                teams[pickedTeam].people.push({ name: application.name + ' ' + application.sname, friends: [] });
+                pickedTeam = (pickedTeam + 1) % this.state.teams!.length;
+            }
+        }
+    }
+
+    addNewTeam() {
+        const teams = [...this.state.teams!];
+        teams.push({
+            name: "New Team",
+            people: [{
+                name: "New Person",
+                friends: []
+            }],
+            id: null
+        })
+        this.setState({ teams });
+    }
     private subscribed = false;
 
     render(props: Readonly<Props>, state: State) {
@@ -97,15 +137,21 @@ export default class Teams extends Component<Props, State> {
         return <>
             <div class="no-print">
                 <h1>Teams</h1>
-                <Link href={Routes.link(Routes.Home)}>Back to home</Link>
+                <Link href={Routes.link(Routes.Home)}>〈 Back to applications list</Link>
             </div>
             {globalState.applications !== null ? <>
                 <div class="no-print">
                     <button onClick={() => this.randomize(globalState.applications!)}>Randomize</button>
+                    <button onClick={() => this.addNewTeam()}>+ Team</button>
                     <br />
                     <label>
                         Target people count in one team:&nbsp;
                         <input type="text" size={4} value={state.targetPeopleCount} onChange={linkState(this, 'targetPeopleCount')} />
+                    </label>
+                    <br />
+                    <label>
+                        Include cancelled applications:&nbsp;
+                        <input type="checkbox" checked={state.includeCancelled} onChange={linkState(this, 'includeCancelled')} />
                     </label>
                 </div>
                 <div class="teams">
@@ -164,7 +210,7 @@ export default class Teams extends Component<Props, State> {
                                         const teams = [...state.teams!];
                                         teams.splice(indexT, 1);
                                         if (team.id != null) {
-                                            ApiLayer.updateTeams(globalState.selectedEventID!, [team.id], [], null);
+                                            ApiLayer.updateTeams(globalState.selectedEventID!, [team.id], [], []);
                                         }
                                         this.setState({
                                             teams

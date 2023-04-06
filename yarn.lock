@@ -2853,6 +2853,11 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
+sync-scroll@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/sync-scroll/-/sync-scroll-1.0.3.tgz#ea3503eb290be42f25d08e02071fc88f58717eea"
+  integrity sha512-iXOBqpYurqz23PyAsKdDerfuSxZBKqYkX2AYL8lWrGuZ8a4KucbcFDlkIfA36tf0YY1JyAL8t6J1gqsGkqVKaQ==
+
 temp-dir@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/temp-dir/-/temp-dir-2.0.0.tgz"

@@ -1,40 +1,23 @@
 @import 'definitions.scss';
+* {
+    box-sizing: border-box;
+}
 
-table {
-    border-collapse: collapse;
+header {
+    position: sticky;
+    top: 0;
+    display: flex;
 
-    .filterBtn {
-        visibility: hidden;
-        position: absolute;
-        right: 0;
-        height: 30px;
-        width: 30px;
-        background: $eightGray;
-        border: 0;
-        border-radius: 4px;
-
-        &:hover,
-        &:focus {
-            background: $quarterGray;
-        }
-    }
-
-    td {
-        border: 1px solid $halfGray;
-        text-overflow: ellipsis;
-    }
-
-    tr:nth-child(even) {
-        background: $quarterGray;
-    }
-
-    th {
+    .th {
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-shrink: 0;
+        position: relative;
+        vertical-align: middle;
         &:not(:last-child) {
             border-right: 1px solid $halfGray;
         }
 
-        position: sticky;
-        top:0;
         background: rgb(192, 192, 192);
 
         &:hover,
@@ -43,6 +26,35 @@ table {
                 visibility: visible;
             }
         }
+
+        .filterBtn {
+            visibility: hidden;
+            position: absolute;
+            right: 0;
+            height: 30px;
+            width: 30px;
+            background: $eightGray;
+            border: 0;
+            border-radius: 4px;
+    
+            &:hover,
+            &:focus {
+                background: $quarterGray;
+            }
+        }
+    }
+}
+
+table {
+    border-collapse: collapse;
+
+    td {
+        border: 1px solid $halfGray;
+        text-overflow: ellipsis;
+    }
+
+    tr:nth-child(even) {
+        background: $quarterGray;
     }
 
     &.truncate {
@@ -97,7 +109,8 @@ table {
                 align-items: center;
                 padding: .1rem .2rem;
 
-                &:hover, &:focus-within{
+                &:hover,
+                &:focus-within {
                     background-color: $halfGray;
                 }
             }
@@ -108,6 +121,8 @@ table {
 
 .filters {
     height: 1.5rem;
+    white-space: nowrap;
+    overflow-x: auto;
 
     .icon {
         display: inline-block;
@@ -119,6 +134,7 @@ table {
         border-radius: 5px;
         padding: .15rem;
         font-size: .9rem;
+        display: inline-block;
 
         input {
             background: 0;
@@ -142,8 +158,16 @@ table {
         top: 0;
         background: white;
 
-        &+table th {
+        &+header .th {
             top: 1.5rem;
         }
     }
+}
+
+.scroll-x {
+    overflow-x: auto;
+}
+
+.width-viewport {
+    width: 100vw;
 }

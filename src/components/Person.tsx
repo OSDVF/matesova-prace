@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { useDrag } from "react-dnd";
+import InputAutoSize from "./InputAutoSize";
 
 export type Person = {
     name: string,
@@ -9,7 +10,8 @@ type Props = {
     person: Person,
     onRemove: (p: Person) => void
     teamIndex: number
-    onDrop: (p: Person, sourceTeam: number) => void
+    onDrop: (p: Person, sourceTeam: number) => void,
+    onChangeName: (p: Person, newName: string) => void
 }
 
 export type PersonDragPayload = {
@@ -17,7 +19,7 @@ export type PersonDragPayload = {
     sourceTeamIndex: number
 }
 
-export default function PersonElem({ person, onRemove, teamIndex, onDrop }: Props) {
+export default function PersonElem({ person, onRemove, teamIndex, onDrop, onChangeName }: Props) {
     const [{ isDragging }, drag] = useDrag(() => ({
         type: 'person',
         item: {
@@ -46,7 +48,7 @@ export default function PersonElem({ person, onRemove, teamIndex, onDrop }: Prop
             src={import.meta.env.BASE_URL + 'person.svg'}
             alt="Osoba"
         />
-        <span>{person.name}</span>&ensp;
+        <InputAutoSize value={person.name} onChange={e => onChangeName(person, e.currentTarget.value)}></InputAutoSize>&ensp;
         <button onClick={() => onRemove(person)}>🗑</button>
         <br />
     </div >

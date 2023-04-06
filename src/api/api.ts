@@ -51,7 +51,6 @@ export default class ApiLayer {
     }
 
     static async getTeams(eventID: number): Promise<receivedData<TeamsData>> {
-        await this.lastRequest;
         return (this.lastRequest = API.post(
             {
                 resource: 'get',

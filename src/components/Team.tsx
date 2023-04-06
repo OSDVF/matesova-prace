@@ -47,9 +47,10 @@ export default function TeamElem({ team, onNameChange, onChange, showDeleteButto
         }),
     }), [addPerson, teamIndex])
 
-    return <div ref={drop} class={classNames({ isOver: isOver })}>
+    return <div ref={drop} class={classNames({ isOver: isOver, team: true, isNew: team.id == null })}>
         <h3><InputAutoSize value={team.name} onChange={e => onNameChange(e.currentTarget.value)} />
             {showDeleteButton && <button onClick={onDelete}>🗑</button>}
+            <button class="addNew" onClick={() => addPerson({ name: "New Person", friends: [] })}>+ 🧍</button>
         </h3>
         {team.people.map((person, indexP) =>
             <PersonElem onRemove={_ => removePerson(indexP)}
@@ -60,6 +61,11 @@ export default function TeamElem({ team, onNameChange, onChange, showDeleteButto
                 }}
                 teamIndex={teamIndex}
                 person={person}
+                onChangeName={(p, newName) => {
+                    const newTeam = { ...team }
+                    newTeam.people[indexP].name = newName;
+                    onChange(newTeam);
+                }}
             />
         )}
     </div >

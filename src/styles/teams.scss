@@ -1,9 +1,20 @@
+//mixin for input without border
+@mixin input-no-border {
+    border: none;
+    background: transparent;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+    display: inline;
+    outline: none;
+}
+
 .teams {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 
-    &>div {
+    &>div.team {
         border: 2px dashed darkblue;
         background: repeating-linear-gradient(45deg,
                 #00008b30,
@@ -12,6 +23,28 @@
                 #00008b25 6px);
         border-radius: 7px;
         padding: 0 .5em .5em .5em;
+
+        &.isOver {
+            background: repeating-linear-gradient(45deg,
+                    #ff8c0030,
+                    #ff8c0030 3px,
+                    #ff8c0025 3px,
+                    #ff8c0025 6px);
+        }
+
+        &.isNew {
+            opacity: .5;
+        }
+
+        .addNew {
+            display: none;
+        }
+
+        &:hover, &:focus-within, &:focus {
+            .addNew {
+                display: inline-block;
+            }
+        }
     }
 
     .person {
@@ -49,14 +82,14 @@
                 visibility: visible;
             }
         }
+
+        &>input {
+            @include input-no-border;
+        }
     }
-    h3 > input {
-        border: none;
-        background: transparent;
-        font-size: inherit;
-        font-family: inherit;
-        font-weight: inherit;
-        display: inline;
+
+    h3>input {
+        @include input-no-border;
     }
 }
 
@@ -68,10 +101,10 @@
             #2e8a0025 6px);
 }
 
-@media print
-{    
-    .no-print, .no-print *
-    {
+@media print {
+
+    .no-print,
+    .no-print * {
         display: none !important;
     }
 }

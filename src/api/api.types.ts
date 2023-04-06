@@ -16,7 +16,13 @@ export enum Meal {
 }
 
 export enum ApplicationState {
-    new, confirmed, waiting, paid, free, cancelled
+    new = "new",
+    confirmed = "confirmed",
+    waiting = "waiting",
+    paid = "paid",
+    free = "free",
+    cancelled = "cancelled"
+
 }
 
 export type application = {
@@ -43,7 +49,7 @@ export type application = {
     state: ApplicationState,
     night_price: number,
     price: number,
-    note_internal:string,
+    note_internal: string,
     appdate: Date,
     extras_price: number | null
 };
@@ -79,5 +85,5 @@ export type TeamsData = {
 export type TeamUpdateResponse = {
     created: number[],
     updated: number[],
-    deleted: number[] 
+    deleted: number[]
 }
