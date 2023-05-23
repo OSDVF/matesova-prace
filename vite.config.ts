@@ -1,15 +1,10 @@
 import { defineConfig } from 'vite'
 import preact from '@preact/preset-vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import typescript from '@rollup/plugin-typescript';
-import ttypescript from 'ttypescript'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    typescript({
-      typescript: ttypescript,
-    }),
     preact(),
     VitePWA({
       registerType: 'autoUpdate',

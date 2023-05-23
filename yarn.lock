@@ -2660,7 +2660,7 @@ require-from-string@^2.0.2:
   resolved "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz"
   integrity sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==
 
-resolve@>=1.9.0, resolve@^1.14.2, resolve@^1.19.0, resolve@^1.20.0, resolve@^1.22.1:
+resolve@^1.14.2, resolve@^1.19.0, resolve@^1.20.0, resolve@^1.22.1:
   version "1.22.1"
   resolved "https://registry.npmjs.org/resolve/-/resolve-1.22.1.tgz"
   integrity sha512-nBpuuYuY5jFsli/JIs1oldw6fOQCBioohqWZg/2hiaOybXOft4lonv85uDOKXdf8rhyK159cxU5cDcK/NKk8zw==
@@ -2902,11 +2902,6 @@ tr46@^1.0.1:
   dependencies:
     punycode "^2.1.0"
 
-ts-transformer-keys@^0.4.4:
-  version "0.4.4"
-  resolved "https://registry.npmjs.org/ts-transformer-keys/-/ts-transformer-keys-0.4.4.tgz"
-  integrity sha512-LrqgvaFvar01/5mbunRyeLTSIkqoC2xfcpL/90aDY6vR07DGyH+UaYGdIEsUudnlAw2Sr0pxFgdZvE0QIyI4qA==
-
 tsc@^2.0.4:
   version "2.0.4"
   resolved "https://registry.npmjs.org/tsc/-/tsc-2.0.4.tgz"
@@ -2916,13 +2911,6 @@ tslib@^1.9.3:
   version "1.14.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
-
-ttypescript@^1.5.15:
-  version "1.5.15"
-  resolved "https://registry.npmjs.org/ttypescript/-/ttypescript-1.5.15.tgz"
-  integrity sha512-48ykDNHzFnPMnv4hYX1P8Q84TvCZyL1QlFxeuxsuZ48X2+ameBgPenvmCkHJtoOSxpoWTWi8NcgNrRnVDOmfSg==
-  dependencies:
-    resolve ">=1.9.0"
 
 type-fest@^0.16.0:
   version "0.16.0"

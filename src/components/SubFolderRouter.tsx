@@ -78,7 +78,9 @@ export class SubfolderRouter extends Router {
                 url: state.url.substr(import.meta.env.BASE_URL.length),
             };
         }
-        return <>{super.render(props, state)}
+        return <>
+        
+        {super.render(props, state)}
             {
                 state.errorMessage != null ?
                     <output className="text-error">

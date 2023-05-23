@@ -1,6 +1,5 @@
 import { Component } from "preact";
 import { DateDiff } from "../plugins/date-diff";
-import { keys } from "ts-transformer-keys";
 import { useContext } from "preact/hooks";
 import { AppStateContext } from "../plugins/state";
 import { ApplicationState, application } from "../api/api.types";
@@ -59,7 +58,6 @@ class Schema implements SchemaInterface {
     public Poznámka!: string;
 }
 
-const schemaKeys = keys<Schema>();
 const stateToRemainingPrice = {
     'cancelled': () => 0,
     'paid': () => 0,
@@ -112,6 +110,7 @@ export default class Accommodation extends Component<Props, State> {
             this.subscribed = true;
             globalState.onChange = () => this.setState({});
         }
+        const schemaKeys = Object.keys(state.applications[0]);
 
         let selectedSchemaKeys = schemaKeys;
         if (!state.showNotes) {
@@ -138,7 +137,7 @@ export default class Accommodation extends Component<Props, State> {
                         <th>#</th>
                         {
                             schemaKeys.map(k =>
-                                state.applications.length > 0 && typeof state.applications[0][k] != 'undefined' &&
+                                state.applications.length > 0 && typeof state.applications[0][k as keyof Schema] != 'undefined' &&
                                 <th style={{ width: schemaWidth[k as keyof typeof schemaWidth] }}>{k.toString()}</th>
                             )
                         }
@@ -150,15 +149,25 @@ export default class Accommodation extends Component<Props, State> {
                         <tr>
                             <td>{ai + 1}</td>
                             {
-                                schemaKeys.map(k =>
-                                    typeof a[k] != 'undefined' &&
-                                    <td>
-                                        <InputAutoSize value={typeof a[k] == 'function' ? (a[k] as () => number)() : typeof a[k] == 'object' && a[k] != null ? toMontString(a[k] as Date) : a[k]?.toString()} onChange={e => {
-                                            const a = state.applications[ai];
-                                            (a[k] as string) = e.currentTarget.value;
-                                            this.setState({});
-                                        }} />
-                                    </td>)
+                                Object.keys(a).map(k => {
+                                    const type = typeof a[k as keyof typeof a];
+                                    return type != 'undefined' &&
+                                        <td>
+                                            <InputAutoSize
+                                                value={type == 'function' ?
+                                                    (a[k as keyof typeof a] as () => number)()
+                                                    : type == 'object' &&
+                                                        a[k as keyof typeof a] != null
+                                                        ? toMontString(a[k as keyof typeof a] as Date)
+                                                        : a[k as keyof typeof a]?.toString()}
+                                                onChange={e => {
+                                                    const a = state.applications[ai];
+                                                    (a[k as keyof typeof a] as string) = e.currentTarget.value;
+                                                    this.setState({});
+                                                }}
+                                            />
+                                        </td>;
+                                })
                             }
                         </tr>
                     )}

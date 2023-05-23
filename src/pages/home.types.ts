@@ -1,92 +1,119 @@
 import { TableField } from "../components/Table";
 import { application } from "../api/api.types";
-import { keys } from 'ts-transformer-keys'
 
-const fieldDef: Partial<TableField>[] = [
-  {
-    text: "ID",
-    show: false
-  },
-  {
-    text: 'Jméno'
-  },
-  {
-    text: 'Příjmení'
-  },
-  {
-    text: 'Věk'
-  },
-  {
-    text: 'Email'
-  },
-  {
-    text: 'Telefon'
-  },
-  {
-    text: 'Město'
-  },
-  {
-    text: 'Hudební nástroj'
-  },
-  {
-    text: 'Poprvé'
-  },
-  {
-    text: 'Kdo pozval'
-  },
-  {
-    text: 'Zdravotní omezení'
-  },
-  {
-    text: 'Jídelní omezení'
-  },
-  {
-    text: 'Poznámka'
-  },
-  {
-    text: '_',
-    show: false
-  },
-  {
-    text: 'Kategorie'
-  },
-  {
-    text: 'Příjezd'
-  },
-  {
-    text: 'První jídlo'
-  },
-  {
-    text: 'Odjezd'
-  },
-  {
-    text: 'Poslední'
-  },
-  {
-    text: 'Zakoupené bonusy'
-  },
-  {
-    text: 'Stav přihášky'
-  },
-  {
-    text: 'Cena za noc'
-  },
-  {
-    text: 'Cena'
-  },
-  {
-    text: 'Interní poznámka'
-  },
-  {
-    text: 'Datum přihlášení'
-  },
-  {
-    text: 'Cena za bonusy'
-  },
-];
+const fieldDef: (Partial<TableField> & {
+  propName: keyof application
+})[] = [
+    {
+      text: "ID",
+      show: false,
+      propName: "appID"
+    },
+    {
+      text: 'Jméno',
+      propName: 'name'
+    },
+    {
+      text: 'Příjmení',
+      propName: 'sname'
+    },
+    {
+      text: 'Věk',
+      propName: 'age'
+    },
+    {
+      text: 'Email',
+      propName: 'email'
+    },
+    {
+      text: 'Telefon',
+      propName: 'phone'
+    },
+    {
+      text: 'Město',
+      propName: 'town'
+    },
+    {
+      text: 'Hudební nástroj',
+      propName: 'music_instrument'
+    },
+    {
+      text: 'Poprvé',
+      propName: 'firsttime'
+    },
+    {
+      text: 'Kdo pozval',
+      propName: 'firsttime_note'
+    },
+    {
+      text: 'Zdravotní omezení',
+      propName: 'note_health'
+    },
+    {
+      text: 'Jídelní omezení',
+      propName: 'note_food'
+    },
+    {
+      text: 'Poznámka',
+      propName: 'note'
+    },
+    {
+      text: '_',
+      show: false,
+      propName: 'wholeevent'
+    },
+    {
+      text: 'Kategorie',
+      propName: 'group'
+    },
+    {
+      text: 'Příjezd',
+      propName: 'arrival'
+    },
+    {
+      text: 'První jídlo',
+      propName: 'first_meal'
+    },
+    {
+      text: 'Odjezd',
+      propName: 'departure'
+    },
+    {
+      text: 'Poslední',
+      propName: 'last_meal'
+    },
+    {
+      text: 'Zakoupené bonusy',
+      propName: 'extras'
+    },
+    {
+      text: 'Stav přihášky',
+      propName: 'state'
+    },
+    {
+      text: 'Cena za noc',
+      propName: 'night_price'
+    },
+    {
+      text: 'Cena',
+      propName: 'price'
+    },
+    {
+      text: 'Interní poznámka',
+      propName: 'note_internal'
+    },
+    {
+      text: 'Datum přihlášení',
+      propName: 'appdate'
+    },
+    {
+      text: 'Cena za bonusy',
+      propName: 'extras_price'
+    },
+  ];
 
 export const fields: TableField[] = fieldDef.map((def, index) => ({
   text: def.text ?? '',
   show: def.show ?? true,
-  propName: keys<application>()[index]
+  propName: def.propName!
 }));
