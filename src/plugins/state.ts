@@ -27,6 +27,7 @@ export class AppState {
             ApiLayer.auth();
             this.events = (await ApiLayer.getEvents()).data.events;
             this.initializing = false;
+            this.onChange();
         }
         else return Promise.reject();
     }

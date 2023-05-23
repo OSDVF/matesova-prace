@@ -1,5 +1,5 @@
 import { Router, RouterProps } from "preact-router";
-import { useContext, useErrorBoundary } from "preact/hooks";
+import { useContext, useEffect, useErrorBoundary } from "preact/hooks";
 import * as Sentry from '@sentry/react';
 import { LoginHandler } from "./LoginHandler";
 import { JSXInternal } from "preact/src/jsx";
@@ -35,7 +35,24 @@ export class SubfolderRouter extends Router {
         const globalState = useContext(AppStateContext);
         if (!this.subscribed) {
             this.subscribed = true;
-            globalState.onChange = () => this.setState({});
+
+            try {
+                if (globalState.selectedEventID == null || globalState.applications == null) {
+                    globalState.init();
+                }
+            }
+            catch (e) {
+                this.showError(e)
+            }
+            globalState.onChange = () => {
+                try {
+                    globalState.selectedEventID = globalState.selectedEventID ?? (globalState.events.length >= 1 ? globalState.events[0].eventID : null)
+                    globalState.fetchApplications();
+                }
+                catch (e) {
+                    this.showError(e)
+                }
+            };
         }
 
         if (error) {
@@ -49,22 +66,6 @@ export class SubfolderRouter extends Router {
                     <button onClick={resetError}> Try again </button>
                 </Fragment>
             );
-        }
-
-        try {
-            if (globalState.selectedEventID != null && globalState.applications == null) {
-                globalState.fetchApplications();
-            }
-            else {
-                globalState.init().then(() => {
-                    globalState.selectedEventID = globalState.selectedEventID ?? globalState.events.length == 1 ? globalState.events[0].eventID : null
-                    globalState.onChange!();
-                }
-                );
-            }
-        }
-        catch (e) {
-            this.showError(e)
         }
 
         if (!state.loggedIn) {

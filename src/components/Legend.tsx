@@ -27,10 +27,11 @@ export function Legend({ onSelectEvent, events, selectedEventID, loginHandler }:
         }
         return returned;
     }
+    console.log(events);
 
     return <div className="legend">
         <label>
-            Selected event:
+            Selected event:&ensp;
             <select onChange={onSelectEvent}>
                 {events.map(event => {
                     return <option value={event.eventID}>{event.title}</option>

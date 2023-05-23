@@ -31,9 +31,7 @@ if (import.meta.env.PROD) {
   });
 }
 
-type Props = {
-  eventID: number | null
-};
+type Props = {};
 type State = {
   errorMessage: string | null,
   truncateCells: boolean
@@ -65,7 +63,10 @@ export class Home extends Component<Props, State> {
     return <>
       <Legend
         events={globalState.events}
-        onSelectEvent={linkState(this, 'selectedEventID')}
+        onSelectEvent={e => {
+          globalState.selectedEventID = parseInt(e.currentTarget.value);
+          globalState.onChange();
+        }}
         selectedEventID={globalState.selectedEventID}
         loginHandler={SubfolderRouter.handler}
       />
@@ -73,36 +74,37 @@ export class Home extends Component<Props, State> {
         <strong>Statistics</strong><label className="info">People count: <span>{globalState.applications?.length}</span></label>
         <label className="info">Wrap text: <input type="checkbox" checked={!state.truncateCells} onChange={() => this.setState({ truncateCells: !state.truncateCells })} /></label>
       </div>
-      {globalState.applications !== null && <Table
-        className={
-          classNames({
-            truncate: state.truncateCells
-          })
-        }
-        data={globalState.applications}
-        fields={fields}
-        showIndexColumn={true}
-        checkboxes={true}
-        filters={true}
-        defaultActions={[
-          {
-            text: "Re-send confirmation email",
-            onClick: function () {
-              if (Array.isArray(this)) {
-                // Multiple lines were selected
-                for (let row of this) {
-                  ApiLayer.resendEmail(row.appID);
+      {globalState.applications !== null &&
+        <Table
+          className={
+            classNames({
+              truncate: state.truncateCells
+            })
+          }
+          data={globalState.applications}
+          fields={fields}
+          showIndexColumn={true}
+          checkboxes={true}
+          filters={true}
+          defaultActions={[
+            {
+              text: "Re-send confirmation email",
+              onClick: function () {
+                if (Array.isArray(this)) {
+                  // Multiple lines were selected
+                  for (let row of this) {
+                    ApiLayer.resendEmail(row.appID);
+                  }
+                }
+                else if (this) {
+                  ApiLayer.resendEmail(this.appID);
+                }
+                else {
+                  console.log("No line was selected");
                 }
               }
-              else if (this) {
-                ApiLayer.resendEmail(this.appID);
-              }
-              else {
-                console.log("No line was selected");
-              }
             }
-          }
-        ]} />}
+          ]} />}
     </>
   }
 }
