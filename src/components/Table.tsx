@@ -44,17 +44,15 @@ type State = {
     newFilter: number | null,
     newFilterInput: RefObject<HTMLInputElement>,
     syncHeaders: RefObject<HTMLElement>,
-    tableBody: RefObject<HTMLTableSectionElement>
+    tableBody: RefObject<HTMLTableSectionElement>,
+    resizeObserver: ResizeObserver
 };
 
 
 
 export class Table<RowType extends (RowWithAction<RowType> | any)> extends Component<Props<RowType>, State> {
-    private resizeObservers: ResizeObserver[];
-
     constructor(props: Props<RowType>) {
         super(props);
-        this.resizeObservers = [];
         this.state = {
             showActions: typeof props.defaultActions != 'undefined' ?? false,
             allChecked: false,
@@ -63,35 +61,24 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
             newFilter: null,
             newFilterInput: createRef<HTMLInputElement>(),
             syncHeaders: createRef<HTMLElement>(),
-            tableBody: createRef<HTMLTableSectionElement>()
+            tableBody: createRef<HTMLTableSectionElement>(),
+            resizeObserver: new ResizeObserver(() => this.doSyncHeaders())
         };
-
-    }
-
-    componentWillReceiveProps(nextProps: Readonly<Props<RowType>>, nextContext: any): void {
-        this.resizeObservers.forEach(observer => observer.disconnect());
-        this.resizeObservers = [];
-        let headerIndex = 0;
-        for (let i = 0; i < nextProps.fields.length; i++) {
-            if (nextProps.fields[i].show ?? false) {
-                this.resizeObservers.push(new ResizeObserver(() => this.doSyncHeaders(headerIndex)));
-                headerIndex++;
-            }
-        }
-
     }
 
     // Sync headers width
-    doSyncHeaders(i: number) {
-        const headerElem = this.state.syncHeaders.current?.children[i] as HTMLElement;
-        const cellElem = this.state.tableBody.current?.children[0].children[i] as HTMLElement;
-        cellElem?.style.removeProperty('width');
-        if ((cellElem?.clientWidth ?? 0) > 2) {
-            headerElem.style.width = cellElem?.clientWidth + 'px';
-        }
-        else {
-            headerElem.style.removeProperty('width');
-            cellElem.style.width = headerElem?.clientWidth + 'px';
+    doSyncHeaders() {
+        for (let i = 0; i < (this.state.syncHeaders.current?.children?.length ?? 0); i++) {
+            const headerElem = this.state.syncHeaders.current?.children[i] as HTMLElement;
+            const cellElem = this.state.tableBody.current?.children[0].children[i].firstElementChild as HTMLElement;
+            cellElem?.style.removeProperty('width');
+            if ((cellElem?.clientWidth ?? 0) > 2) {
+                headerElem.style.width = (cellElem.parentElement!.offsetWidth - parseFloat(getComputedStyle(headerElem.parentElement!).borderWidth.replace('px', '')) * 2) + 'px';
+            }
+            else {
+                headerElem.style.removeProperty('width');
+                cellElem.style.width = (headerElem?.clientWidth - parseFloat(getComputedStyle(cellElem.parentElement!).borderWidth.replace('px', '')) * 2) + 'px';
+            }
         }
     }
 
@@ -128,6 +115,7 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
         newFilterInput,
         syncHeaders,
         tableBody,
+        resizeObserver
     }: State) {
 
         // After component render
@@ -146,6 +134,13 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
                 this.setState({ newFilter: null });
             }
         }, [newFilter]);
+        //On table body bound 
+        useEffect(() => {
+            if (tableBody.current) {
+                resizeObserver.disconnect();
+                resizeObserver.observe(tableBody.current);
+            }
+        }, [tableBody]);
 
         const filteredData = data
             .filter(row => {
