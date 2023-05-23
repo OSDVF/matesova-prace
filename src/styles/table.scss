@@ -72,7 +72,7 @@ table {
             overflow: hidden;
 
             &>div {
-                overflow: hidden;
+                overflow: visible;
                 max-height: $closedCell;
             }
 

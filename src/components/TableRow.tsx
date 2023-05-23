@@ -91,6 +91,7 @@ export class TableRow<T extends any> extends Component<Props<T>, State> {
                 e.preventDefault();
                 return false;
             }
+            return true;
         };
         return <div ref={state.thisComponent} onClick={actionMenuToggle} onContextMenu={actionMenuToggle}>
             {indexColContent}
