@@ -1,6 +1,7 @@
 import CAPI from "renette-api";
 import { receivedData } from "renette-api/dist/types"
 import { TeamUpdateResponse, TeamsData, application, futureEvent, futureEventInData } from "./api.types";
+import * as Sentry from "@sentry/browser";
 
 const API = new CAPI();
 API.setConfig({
@@ -19,27 +20,46 @@ export default class ApiLayer {
     }
     static async getApplicationsTable(eventId: Number): Promise<receivedData<{ applications: application[] }>> {
         await this.lastRequest;
-        return (this.lastRequest = API.post({
+        const data = await (this.lastRequest = API.post({
             resource: 'get',
             action: 'getApps',
             data: {
                 eventId
             }
         }));
+        
+        Sentry.addBreadcrumb({
+            category: 'api',
+            message: 'getApplicationsTable',
+            data: {
+                eventId,
+                ...data
+            }
+        });
+        return data;
     }
     static async getEvents(): Promise<receivedData<futureEventInData>> {
         await this.lastRequest;
-        return (this.lastRequest = API.post(
+        const data = await (this.lastRequest = API.post(
             {
                 resource: 'get',
                 action: 'getEvents'
             }
         ));
+
+        Sentry.addBreadcrumb({
+            category: 'api',
+            message: 'getEvents',
+            data: {
+                ...data
+            }
+        });
+        return data;
     }
 
     static async resendEmail(appID: number): Promise<receivedData<any>> {
         await this.lastRequest;
-        return (this.lastRequest = API.post(
+        const data = await (this.lastRequest = API.post(
             {
                 resource: 'manageApp',
                 action: 'resendMail',
@@ -48,10 +68,20 @@ export default class ApiLayer {
                 }
             }
         ));
+
+        Sentry.addBreadcrumb({
+            category: 'api',
+            message: 'resendEmail',
+            data: {
+                appID,
+                ...data
+            }
+        });
+        return data;
     }
 
     static async getTeams(eventID: number): Promise<receivedData<TeamsData>> {
-        return (this.lastRequest = API.post(
+        const data = await (this.lastRequest = API.post(
             {
                 resource: 'get',
                 action: 'getTeams',
@@ -60,10 +90,20 @@ export default class ApiLayer {
                 }
             }
         ));
+
+        Sentry.addBreadcrumb({
+            category: 'api',
+            message: 'getTeams',
+            data: {
+                eventID,
+                ...data
+            }
+        });
+        return data;
     }
 
     static async updateTeams(eventID: number, teamIDs: number[] | null, data: string[] | null, names: string[] | null): Promise<receivedData<TeamUpdateResponse>> {
-        return (this.lastRequest = API.post(
+        const result = await (this.lastRequest = API.post(
             {
                 resource: 'manageApp',
                 action: 'updateTeams',
@@ -75,5 +115,18 @@ export default class ApiLayer {
                 }
             }
         ));
+
+        Sentry.addBreadcrumb({
+            category: 'api',
+            message: 'getApplicationsTable',
+            data: {
+                eventID,
+                teamIDs,
+                inputData: data,
+                names,
+                ...result
+            }
+        });
+        return result;
     }
 };
