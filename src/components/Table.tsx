@@ -70,7 +70,11 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
     doSyncHeaders() {
         for (let i = 0; i < (this.state.syncHeaders.current?.children?.length ?? 0); i++) {
             const headerElem = this.state.syncHeaders.current?.children[i] as HTMLElement;
-            const cellElem = this.state.tableBody.current?.children[0].children[i].firstElementChild as HTMLElement;
+            const cellElem = this.state.tableBody.current?.children[0]?.children[i]?.firstElementChild as HTMLElement;
+            if(typeof cellElem === 'undefined')
+            {
+                return;
+            }
             cellElem?.style.removeProperty('width');
             if ((cellElem?.clientWidth ?? 0) > 2) {
                 headerElem.style.width = (cellElem.parentElement!.offsetWidth - parseFloat(getComputedStyle(headerElem.parentElement!).borderWidth.replace('px', '')) * 2) + 'px';

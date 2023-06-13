@@ -129,23 +129,30 @@ export class LoginHandler extends Component<Props, State> {
                 LoginHandler.loginCallback(credential as CredentialResponse);
             }
             else {
-                google.accounts.id.initialize({
-                    client_id: import.meta.env.VITE_GOOGLE_ID,
-                    callback: LoginHandler.loginCallback,
-                    cancel_on_tap_outside: false,
-                    ux_mode: "popup",
-                    state_cookie_domain: import.meta.env.VITE_DOMAIN,
-                    allowed_parent_origin: import.meta.env.VITE_DOMAIN_GLOB,
-                    itp_support: true
-                });
-                const button = document.getElementById('googleSignIn');
-                if (button) {
-                    google.accounts.id.renderButton(button, {
-                        text: 'signin',
+                const loginPrompt = () => {
+                    google.accounts.id.initialize({
+                        client_id: import.meta.env.VITE_GOOGLE_ID,
+                        callback: LoginHandler.loginCallback,
+                        cancel_on_tap_outside: false,
+                        ux_mode: "popup",
+                        state_cookie_domain: import.meta.env.VITE_DOMAIN,
+                        allowed_parent_origin: import.meta.env.VITE_DOMAIN_GLOB,
+                        itp_support: true
                     });
+                    const button = document.getElementById('googleSignIn');
+                    if (button) {
+                        google.accounts.id.renderButton(button, {
+                            text: 'signin',
+                        });
+                    }
+                    google.accounts.id.prompt();
+                };
+                if (typeof google === 'undefined') {
+                    document.getElementById('googleGsiScript')?.addEventListener('load', loginPrompt);
                 }
-                google.accounts.id.prompt();
-
+                else {
+                    loginPrompt();
+                }
             }
         });
     }
