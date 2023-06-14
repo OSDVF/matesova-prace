@@ -110,6 +110,10 @@ const fieldDef: (Partial<TableField> & {
       text: 'Cena za bonusy',
       propName: 'extras_price'
     },
+    {
+      text: 'Potvrzení odesláno',
+      propName: 'confirmation_sent'
+    }
   ];
 
 export const fields: TableField[] = fieldDef.map((def, index) => ({

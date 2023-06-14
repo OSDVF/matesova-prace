@@ -37,26 +37,16 @@ export class SubfolderRouter extends Router {
             this.subscribed = true;
 
             globalState.onChange = () => {
-                try {
-                    globalState.selectedEventID = globalState.selectedEventID ?? (globalState.events.length >= 1 ? globalState.events[0].eventID : null)
-                    globalState.fetchApplications();
-                }
-                catch (e) {
-                    this.showError(e)
-                }
+                globalState.selectedEventID = globalState.selectedEventID ?? (globalState.events.length >= 1 ? globalState.events[0].eventID : null)
+                globalState.fetchApplications().catch(e => this.showError(e));
             };
 
             globalState.onLoading = () => {
                 this.setState({});
             }
 
-            try {
-                if (globalState.selectedEventID == null || globalState.applications == null) {
-                    globalState.init();
-                }
-            }
-            catch (e) {
-                this.showError(e)
+            if (globalState.selectedEventID == null || globalState.applications == null) {
+                globalState.init().catch(e => this.showError(e));
             }
         }
 

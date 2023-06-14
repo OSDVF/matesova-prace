@@ -54,14 +54,13 @@ export class AppState {
     }
     async fetchApplications(eventId = this.selectedEventID) {
         if (!this.gettingEvents) {
+            if (!eventId) throw new Error('No event selected');
             this.gettingEvents = true;
             this.loading = true;
-            if (!eventId) throw new Error('No event selected');
             const resp = await ApiLayer.getApplicationsTable(eventId);
             if (resp.data.applications) {
                 this.applications = resp.data.applications
-                for(const app of this.applications)
-                {
+                for (const app of this.applications) {
                     app.departure = new Date(app.departure)
                     app.arrival = new Date(app.arrival)
                 }
@@ -73,6 +72,19 @@ export class AppState {
             this.gettingEvents = false;
             this.loading = false;
         }
+    }
+    async resendMailIfNotSent(eventId = this.selectedEventID) {
+        if (!eventId) throw new Error('No event selected');
+        this.loading = true;
+        const resp = await ApiLayer.resendMailIfNotSent(eventId);
+        if (resp.data.sent !== false) {
+            alert(`Sent emails to ${resp.data.sent} people}`);
+            this.fetchApplications(eventId);
+        }
+        else {
+            throw resp;
+        }
+        this.loading = false;
     }
 }
 

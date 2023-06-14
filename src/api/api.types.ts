@@ -51,7 +51,8 @@ export type application = {
     price: number,
     note_internal: string,
     appdate: Date,
-    extras_price: number | null
+    extras_price: number | null,
+    confirmation_sent: boolean
 };
 
 export type futureEventInData = {
@@ -86,4 +87,8 @@ export type TeamUpdateResponse = {
     created: number[],
     updated: number[],
     deleted: number[]
+}
+
+export type ResendMailResponse = {
+    sent: number | false,
 }

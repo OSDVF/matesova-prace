@@ -1,4 +1,5 @@
 @import 'definitions.scss';
+$focusShadow: 0px 0px 4px 0px #e7a61a;
 
 * {
     box-sizing: border-box;
@@ -27,8 +28,19 @@ thead tr {
 
         background: rgb(192, 192, 192);
 
+        &.applied {
+            box-shadow: $focusShadow inset;
+
+            .filterBtn::after {
+                content: '+';
+                position: absolute;
+                right: 5px;
+            }
+        }
+
         &:hover,
-        &:focus-within {
+        &:focus-within,
+        &.applied {
             .filterBtn {
                 visibility: visible;
             }
@@ -77,8 +89,8 @@ table {
             }
 
             &:focus {
-                $shadow: 0px 0px 4px 0px #e7a61a;
-                box-shadow: $shadow, $shadow inset;
+
+                box-shadow: $focusShadow, $focusShadow inset;
 
                 &>div {
                     max-height: $openCell;

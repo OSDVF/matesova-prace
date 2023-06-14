@@ -71,8 +71,7 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
         for (let i = 0; i < (this.state.syncHeaders.current?.children?.length ?? 0); i++) {
             const headerElem = this.state.syncHeaders.current?.children[i] as HTMLElement;
             const cellElem = this.state.tableBody.current?.children[0]?.children[i]?.firstElementChild as HTMLElement;
-            if(typeof cellElem === 'undefined')
-            {
+            if (typeof cellElem === 'undefined') {
                 return;
             }
             cellElem?.style.removeProperty('width');
@@ -162,38 +161,39 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
             });
 
         return <>
-            {appliedFilters.length ?
-                <div className="filters"><div className="icon"><i className="gg-filter" /></div>
-                    {
-                        appliedFilters.map((filter, filterPos) => {
-                            const fieldText = fields[filter.index].text;
+            {//Render filter badges
+                appliedFilters.length ?
+                    <div className="filters"><div className="icon"><i className="gg-filter" /></div>
+                        {
+                            appliedFilters.map((filter, filterPos) => {
+                                const fieldText = fields[filter.index].text;
 
-                            return <div className={classNames({
-                                filter: true,
-                                applied: filter.applied
-                            })} style={{ background: (filter.applied ? stringToColor(fieldText) : '#cccccc') + '77' }} onClick={e => {
-                                if (e.target == e.currentTarget) {
-                                    this.updateFilter({ ...filter, applied: !filter.applied }, filterPos)
-                                }
-                            }}>
-                                {fieldText}:&nbsp;
-                                <input type="text" ref={filter.index == newFilter ? newFilterInput : null} value={filter.value} onInput={e => this.updateFilter({
-                                    index: filter.index,
-                                    applied: true,
-                                    value: e.currentTarget.value
-                                }, filterPos)} />
+                                return <div className={classNames({
+                                    filter: true,
+                                    applied: filter.applied
+                                })} style={{ background: (filter.applied ? stringToColor(fieldText) : '#cccccc') + '77' }} onClick={e => {
+                                    if (e.target == e.currentTarget) {
+                                        this.updateFilter({ ...filter, applied: !filter.applied }, filterPos)
+                                    }
+                                }}>
+                                    {fieldText}:&nbsp;
+                                    <input type="text" ref={filter.index == newFilter ? newFilterInput : null} value={filter.value} onInput={e => this.updateFilter({
+                                        index: filter.index,
+                                        applied: true,
+                                        value: e.currentTarget.value
+                                    }, filterPos)} />
 
-                                <button class="close" onClick={() => {
-                                    const newFilters = [...appliedFilters];
-                                    newFilters.splice(filterPos);
-                                    this.setAppliedFilters(
-                                        newFilters
-                                    );
-                                }}>&times;</button>
-                            </div>
-                        })
-                    }
-                </div> : null
+                                    <button class="close" onClick={() => {
+                                        const newFilters = [...appliedFilters];
+                                        newFilters.splice(filterPos);
+                                        this.setAppliedFilters(
+                                            newFilters
+                                        );
+                                    }}>&times;</button>
+                                </div>
+                            })
+                        }
+                    </div> : null
             }
 
             <header ref={syncHeaders}>
@@ -214,11 +214,13 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
                         return null;
                     }
                     const headerContent: JSX.Element[] = [<Fragment>{field.text}</Fragment>];
+                    let colHasAppliedFilter = false;
                     if (filters) {
+                        colHasAppliedFilter = appliedFilters.find(f => f.index == fieldIndex)?.applied ?? false;
                         headerContent.push(<button
                             className={
                                 classNames({
-                                    filterBtn: true, applied: appliedFilters.find(f => f.index == fieldIndex)?.applied
+                                    filterBtn: true, applied: colHasAppliedFilter
                                 })}
                             onClick={_ => {
                                 this.setAppliedFilters([...appliedFilters, { index: fieldIndex, applied: true, value: "" }]);
@@ -229,7 +231,14 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
                         );
                     }
 
-                    return <div class={(field.class ?? '' + ' th')}>{headerContent}</div>
+                    return (
+                        <div class={classNames({
+                            [field.class ?? '']: true, th: true, applied: colHasAppliedFilter
+                        })}
+                            title={field.text + (colHasAppliedFilter ? ' has filter applied' : '')}>
+                            {headerContent}
+                        </div>
+                    );
                 })}
             </header >
             <div class="scroll-x" onScroll={e => {
@@ -267,7 +276,7 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
                                 }
                                 for (let field of fields) {
                                     if ((field.show ?? true) && Object.hasOwn(row as object, field.propName)) {
-                                        const content = row[field.propName as keyof RowType];
+                                        const content = row[field.propName as keyof RowType] as RowType;
                                         items.push(<td tabIndex={0}><div>{content instanceof Date ? content.toLocaleDateString() : (content ?? "").toString()}</div></td>);
                                     }
                                 }

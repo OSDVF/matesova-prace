@@ -16,6 +16,7 @@ import { Legend } from '../components/Legend';
 import classNames from 'classnames';
 import { AppStateContext } from '../plugins/state';
 import { SubfolderRouter } from '../components/SubFolderRouter';
+import { ApplicationState } from '../api/api.types';
 
 if (import.meta.env.PROD) {
   Sentry.init({
@@ -71,7 +72,16 @@ export class Home extends Component<Props, State> {
         loginHandler={SubfolderRouter.handler}
       />
       <div className="legend">
-        <strong>Statistics</strong><label className="info">People count: <span>{globalState.applications?.length}</span></label>
+        <strong>Statistics</strong>
+        <label className="info">People count: <span>{globalState.applications?.length}</span></label>
+        <label className="info">Cancelled: <span>{globalState.applications?.filter(a => a.state == ApplicationState.cancelled).length}</span></label>
+        <label className="info">Emails sent: <span>{globalState.applications?.filter(a => a.confirmation_sent).length}</span>
+          {
+            !globalState.applications?.every(a => a.confirmation_sent) &&
+            <>&ensp;<button title="Re-send emails where not sent" onClick={() => {
+              globalState.resendMailIfNotSent();
+            }}>💌</button></>
+          }</label>
         <label className="info">Wrap text: <input type="checkbox" checked={!state.truncateCells} onChange={() => this.setState({ truncateCells: !state.truncateCells })} /></label>
       </div>
       {globalState.applications !== null &&

@@ -1,6 +1,6 @@
 import CAPI from "renette-api";
 import { receivedData } from "renette-api/dist/types"
-import { TeamUpdateResponse, TeamsData, application, futureEvent, futureEventInData } from "./api.types";
+import { ResendMailResponse, TeamUpdateResponse, TeamsData, application, futureEvent, futureEventInData } from "./api.types";
 import * as Sentry from "@sentry/browser";
 
 const API = new CAPI();
@@ -27,7 +27,7 @@ export default class ApiLayer {
                 eventId
             }
         }));
-        
+
         Sentry.addBreadcrumb({
             category: 'api',
             message: 'getApplicationsTable',
@@ -124,6 +124,28 @@ export default class ApiLayer {
                 teamIDs,
                 inputData: data,
                 names,
+                ...result
+            }
+        });
+        return result;
+    }
+
+    static async resendMailIfNotSent(eventID: number): Promise<receivedData<ResendMailResponse>> {
+        const result = await (this.lastRequest = API.post(
+            {
+                resource: 'manageApp',
+                action: 'resendMailIfNotSent',
+                data: {
+                    eventID
+                }
+            }
+        ));
+
+        Sentry.addBreadcrumb({
+            category: 'api',
+            message: 'resendMailIfNotSent',
+            data: {
+                eventID,
                 ...result
             }
         });
