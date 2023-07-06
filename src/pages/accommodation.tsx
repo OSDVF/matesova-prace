@@ -110,7 +110,7 @@ export default class Accommodation extends Component<Props, State> {
             this.subscribed = true;
             globalState.onChange = () => this.setState({});
         }
-        const schemaKeys = Object.keys(state.applications[0]);
+        const schemaKeys = Object.keys(state.applications.length > 0 ? state.applications[0] : []);
 
         let selectedSchemaKeys = schemaKeys;
         if (!state.showNotes) {
