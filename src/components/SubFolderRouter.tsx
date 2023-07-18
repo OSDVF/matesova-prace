@@ -38,7 +38,7 @@ export class SubfolderRouter extends Router {
 
             globalState.onChange = () => {
                 globalState.selectedEventID = globalState.selectedEventID ?? (globalState.events.length >= 1 ? globalState.events[0].eventID : null)
-                globalState.fetchApplications().catch(e => this.showError(e));
+                globalState.fetchApplications().then(() => this.setState({ errorMessage: '' })).catch(e => this.showError(e));
             };
 
             globalState.onLoading = () => {
@@ -74,8 +74,8 @@ export class SubfolderRouter extends Router {
             };
         }
         return <>
-        {globalState.loading && <progress>Loading...</progress>}
-        {super.render(props, state)}
+            {globalState.loading && <progress>Loading...</progress>}
+            {super.render(props, state)}
             {
                 state.errorMessage != null ?
                     <output className="text-error">

@@ -7,6 +7,7 @@ export class AppState {
     public applications: application[] | null = null;
     public events: futureEvent[] = [];
     public selectedEventID: number | null = null;
+    public includePastEvents = false;
     private subscribedChange: (() => void)[] = []
     public get onChange() {
         return (() => {
@@ -41,12 +42,14 @@ export class AppState {
         this.onLoading?.();
     }
 
-    async init() {
+    async init(past = this.includePastEvents) {
         if (!this.initializing) {
             this.initializing = true;
             this.loading = true;
-            ApiLayer.auth();
-            this.events = (await ApiLayer.getEvents()).data.events;
+            if(!ApiLayer.isAuthorized) {
+                ApiLayer.auth();
+            }
+            this.events = (await ApiLayer.getEvents(past)).data.events;
             this.initializing = this.loading = false;
             this.onChange();
         }

@@ -18,6 +18,11 @@ export default class ApiLayer {
         }));
         return this.lastRequest;
     }
+
+    static get isAuthorized() {
+        return API.isAuthorized
+    }
+
     static async getApplicationsTable(eventId: Number): Promise<receivedData<{ applications: application[] }>> {
         await this.lastRequest;
         const data = await (this.lastRequest = API.post({
@@ -38,12 +43,15 @@ export default class ApiLayer {
         });
         return data;
     }
-    static async getEvents(): Promise<receivedData<futureEventInData>> {
+    static async getEvents(past = false): Promise<receivedData<futureEventInData>> {
         await this.lastRequest;
         const data = await (this.lastRequest = API.post(
             {
                 resource: 'get',
-                action: 'getEvents'
+                action: 'getEvents',
+                data: {
+                    past
+                }
             }
         ));
 

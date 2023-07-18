@@ -68,8 +68,13 @@ export class Home extends Component<Props, State> {
           globalState.selectedEventID = parseInt(e.currentTarget.value);
           globalState.onChange();
         }}
+        onChangeIncludePast={e => {
+          globalState.includePastEvents = e.currentTarget.checked;
+          globalState.init();
+        }}
         selectedEventID={globalState.selectedEventID}
         loginHandler={SubfolderRouter.handler}
+        includePast={globalState.includePastEvents}
       />
       <div className="legend">
         <strong>Statistics</strong>

@@ -4,9 +4,11 @@ import Routes from '../plugins/routes';
 
 type Props = {
     onSelectEvent: JSXInternal.GenericEventHandler<HTMLSelectElement>
+    onChangeIncludePast: JSXInternal.GenericEventHandler<HTMLInputElement>
     events: futureEvent[],
     selectedEventID: number | null
     loginHandler: JSXInternal.Element,
+    includePast: boolean
 }
 
 function toLocalDate(dateString: string | undefined) {
@@ -16,7 +18,7 @@ function toLocalDate(dateString: string | undefined) {
     return (new Date(dateString).toLocaleString());
 }
 
-export function Legend({ onSelectEvent, events, selectedEventID, loginHandler }: Props) {
+export function Legend({ onSelectEvent, events, selectedEventID, loginHandler, includePast, onChangeIncludePast }: Props) {
 
     function getSelectedEvent() {
         let returned = null;
@@ -38,6 +40,7 @@ export function Legend({ onSelectEvent, events, selectedEventID, loginHandler }:
                 })}
             </select>
         </label>
+        <label className="info">Include past&ensp;<input type="checkbox" checked={includePast} onChange={onChangeIncludePast} /></label>
         <label className="info">Applications from: <span>{toLocalDate(getSelectedEvent()?.appBegin)}</span></label>
         <label className="info">To: <span>{toLocalDate(getSelectedEvent()?.appEnd)}</span></label>
         <label className="info"><button onClick={() => Routes.go(Routes.Teams)}>Generate teams</button></label>
