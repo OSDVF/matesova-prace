@@ -76,11 +76,11 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
             }
             cellElem?.style.removeProperty('width');
             if ((cellElem?.clientWidth ?? 0) > 2) {
-                headerElem.style.width = (cellElem.parentElement!.offsetWidth - parseFloat(getComputedStyle(headerElem.parentElement!).borderWidth.replace('px', '')) * 2) + 'px';
+                headerElem.style.width = (cellElem.parentElement!.offsetWidth - parseFloat(getComputedStyle(headerElem!).borderWidth.replace('px', '')) * 2) + 'px';
             }
             else {
                 headerElem.style.removeProperty('width');
-                cellElem.style.width = (headerElem?.clientWidth - parseFloat(getComputedStyle(cellElem.parentElement!).borderWidth.replace('px', '')) * 2) + 'px';
+                cellElem.style.width = (headerElem?.clientWidth - parseFloat(getComputedStyle(cellElem!).borderWidth.replace('px', '')) * 2) + 'px';
             }
         }
     }

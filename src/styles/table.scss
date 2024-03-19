@@ -84,7 +84,7 @@ table {
             overflow: hidden;
 
             &>div {
-                overflow: visible;
+                overflow: auto;
                 max-height: $closedCell;
             }
 
@@ -101,7 +101,7 @@ table {
 
         tr:focus-within {
             &>td>div {
-                overflow: visible;
+                overflow: auto;
             }
         }
     }

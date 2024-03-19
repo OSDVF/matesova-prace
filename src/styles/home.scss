@@ -2,12 +2,13 @@
 @import 'definitions.scss';
 
 :root {
-    overflow-x: hidden;
-
     @media (prefers-color-scheme: dark) {
         filter: invert(100%);
         background: white;
     }
+}
+#app {
+    overflow-x: hidden;
 }
 
 .legend {
@@ -19,12 +20,10 @@
     margin-bottom: .5rem;
 }
 
-label.info {
-    &::before {
-        content: '|';
-        color: rgba(128, 128, 128, 0.451);
-        margin-right: .5rem;
-    }
+.info {
+    border-left: 2px solid rgba(128, 128, 128, 0.451);
+    padding-left: .5rem;
+    margin-right: .5rem;
 }
 
 .text-error {

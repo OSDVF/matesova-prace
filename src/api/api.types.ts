@@ -12,7 +12,7 @@ export type futureEvent = {
 };
 
 export enum Meal {
-    VECERE, SNIDANE, OBED
+    VECERE = "VECERE", SNIDANE = "SNIDANE", OBED = "OBED"
 }
 
 export enum ApplicationState {
