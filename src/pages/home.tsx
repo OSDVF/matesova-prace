@@ -36,7 +36,8 @@ type State = {
   truncateCells: boolean
 };
 
-type MealCounts = { [meal in Meal]: number };
+type MealCount = { all: number, vege: number, free: number };
+type MealCounts = { [meal in Meal]: MealCount };
 
 export class Home extends Component<Props, State> {
   private subscribed = false;
@@ -54,53 +55,14 @@ export class Home extends Component<Props, State> {
     });
     return `Error (code ${response.code}) while performing ${response.action}: ${JSON.stringify(response.data)}`;
   }
-  getDayNightCounts(applications: application[] | null) {
-    if (!applications) return [];
 
-    const days = new Map<number, {
-      places: number,
-      meals: MealCounts,
-    }>();
-    for (const a of applications) {
-      // JS will automatically uodate month and year
-      for (let day = new Date(a.arrival), meals = {
-        [Meal.OBED]: [Meal.OBED, Meal.SNIDANE].includes(a.first_meal) ? 1 : 0,
-        [Meal.SNIDANE]: a.first_meal === Meal.SNIDANE ? 1 : 0,
-        [Meal.VECERE]: 1,
-      }; day <= a.departure; day.setDate(day.getDate() + 1), meals = day == a.departure ? {
-        [Meal.OBED]: [Meal.OBED, Meal.VECERE].includes(a.last_meal) ? 1 : 0,
-        [Meal.SNIDANE]: 1,
-        [Meal.VECERE]: a.last_meal === Meal.VECERE ? 1 : 0,
-      } : {
-        [Meal.OBED]: 1,
-        [Meal.SNIDANE]: 1,
-        [Meal.VECERE]: 1,
-      }) {
-        const current = days.get(day.getTime());
-        if (typeof current === 'undefined') {
-          days.set(day.getTime(), { places: 1, meals });
-        } else {
-          days.set(day.getTime(), {
-            places: current.places + 1,
-            meals: {
-              [Meal.OBED]: current.meals[Meal.OBED] + meals[Meal.OBED],
-              [Meal.SNIDANE]: current.meals[Meal.SNIDANE] + meals[Meal.SNIDANE],
-              [Meal.VECERE]: current.meals[Meal.VECERE] + meals[Meal.VECERE],
-            }
-          });
-        }
-      }
-    }
-    //return as array sorted by date
-    return Array.from(days.entries()).sort((a, b) => a[0] - b[0]);
-  }
   render(props: Props, state: Readonly<State>) {
     const globalState = useContext(AppStateContext);
     if (!this.subscribed) {
       this.subscribed = true;
       globalState.onChange = () => this.setState({});
     }
-    const days = this.getDayNightCounts(globalState.applications);
+    const days = getStatistics(globalState.applications);
     const order = { [Meal.SNIDANE]: 0, [Meal.OBED]: 1, [Meal.VECERE]: 2 }
     return <>
       <Legend
@@ -121,11 +83,10 @@ export class Home extends Component<Props, State> {
         <strong>Statistics</strong>
         <label className="info">{"\u{1F9D1}\u{200D}\u{1F91D}\u{200D}\u{1F9D1}"} <span>{globalState.applications?.length}</span></label>
         {
-          days.map(([date, { places, meals }]) => <label className="info">{new Date(date).getDate()}.{new Date(date).getMonth()}.{"\u{1F9D1}\u{200D}\u{1F4BC}"} {places}
-            <br />
+          days.map(([date, { places, meals }]) => <label className="info">{new Date(date).getDate()}.{new Date(date).getMonth()}. {places} {"\u{1F9D1}\u{200D}\u{1F4BC}"} &nbsp;
             {Object.entries(meals).sort((a, b) => {
               return order[a[0] as any as keyof typeof order] - order[b[0] as any as keyof typeof order];
-            }).map(([meal, count], i, a) => <span key={meal}>{meal[0]}: {count}{i == a.length - 1 ? '' : ', '}</span>)}
+            }).map(([meal, count], i, a) => <span key={meal}>{meal[0]}: {count.all}<small>{specialMealToStr(count)}</small>{i == a.length - 1 ? '' : ', '}</span>)}
           </label>)
         }
         <label className="info">Cancelled: <span>{globalState.applications?.filter(a => a.state == ApplicationState.cancelled).length}</span></label>
@@ -171,6 +132,79 @@ export class Home extends Component<Props, State> {
           ]} />}
     </>
   }
+}
+
+const empty: MealCount = {
+  all: 0,
+  vege: 0,
+  free: 0
+}
+function mealType(a: application): MealCount {
+  return {
+    all: 1,
+    vege: a.note_food.includes('vege') ? 1 : 0,
+    free: a.note_food.includes('bezlep') ? 1 : 0
+  }
+}
+function specialMealToStr(count: MealCount): string {
+  return count.vege || count.free ? `(${count.vege}v, ${count.free}b)` : '';
+}
+function addMeals(a: MealCounts, b: MealCounts): MealCounts {
+  return {
+    [Meal.OBED]: {
+      all: a[Meal.OBED].all + b[Meal.OBED].all,
+      vege: a[Meal.OBED].vege + b[Meal.OBED].vege,
+      free: a[Meal.OBED].free + b[Meal.OBED].free
+    },
+    [Meal.SNIDANE]: {
+      all: a[Meal.SNIDANE].all + b[Meal.SNIDANE].all,
+      vege: a[Meal.SNIDANE].vege + b[Meal.SNIDANE].vege,
+      free: a[Meal.SNIDANE].free + b[Meal.SNIDANE].free
+    },
+    [Meal.VECERE]: {
+      all: a[Meal.VECERE].all + b[Meal.VECERE].all,
+      vege: a[Meal.VECERE].vege + b[Meal.VECERE].vege,
+      free: a[Meal.VECERE].free + b[Meal.VECERE].free
+    }
+  }
+
+}
+function getStatistics(applications: application[] | null) {
+  if (!applications) return [];
+
+  const days = new Map<number, {
+    places: number,
+    meals: MealCounts
+  }>();
+  for (const a of applications) {
+    // JS will automatically uodate month and year
+    const meal = mealType(a);
+    for (let day = new Date(a.arrival), meals = {
+      [Meal.OBED]: [Meal.OBED, Meal.SNIDANE].includes(a.first_meal) ? meal : empty,
+      [Meal.SNIDANE]: a.first_meal === Meal.SNIDANE ? meal : empty,
+      [Meal.VECERE]: meal,
+    }; day <= a.departure; day.setDate(day.getDate() + 1), meals = day == a.departure ? {
+      [Meal.OBED]: [Meal.OBED, Meal.VECERE].includes(a.last_meal) ? meal : empty,
+      [Meal.SNIDANE]: meal,
+      [Meal.VECERE]: a.last_meal === Meal.VECERE ? meal : empty,
+    } : {
+      [Meal.OBED]: meal,
+      [Meal.SNIDANE]: meal,
+      [Meal.VECERE]: meal,
+    }) {
+      const current = days.get(day.getTime());
+      if (typeof current === 'undefined') {
+        days.set(day.getTime(), { places: 1, meals });
+      } else {
+        days.set(day.getTime(), {
+          places: current.places + 1,
+          meals: addMeals(current.meals, meals)
+        });
+      }
+    }
+  }
+  //return as array sorted by date
+  return Array.from(days.entries()).sort((a, b) => a[0] - b[0]);
 }
 
 const name = 'x-matesova-prace'
