@@ -83,10 +83,10 @@ export class Home extends Component<Props, State> {
         <strong>Statistics</strong>
         <label className="info">{"\u{1F9D1}\u{200D}\u{1F91D}\u{200D}\u{1F9D1}"} <span>{globalState.applications?.length}</span></label>
         {
-          days.map(([date, { places, meals }]) => <label className="info">{new Date(date).getDate()}.{new Date(date).getMonth()}. {places} {"\u{1F9D1}\u{200D}\u{1F4BC}"} &nbsp;
+          days.map(([date, { places, meals }]) => <label className="info">{new Date(date).getDate()}.{new Date(date).getMonth() + 1}. {places} {"\u{1F9D1}\u{200D}\u{1F4BC}"} &nbsp;
             {Object.entries(meals).sort((a, b) => {
               return order[a[0] as any as keyof typeof order] - order[b[0] as any as keyof typeof order];
-            }).map(([meal, count], i, a) => <span key={meal}>{meal[0]}: {count.all}<small>{specialMealToStr(count)}</small>{i == a.length - 1 ? '' : ', '}</span>)}
+            }).map(([meal, count], i, a) => count.all > 0 ? <span key={meal}>{meal[0]}: {count.all}<small>{specialMealToStr(count)}</small>{i == a.length - 1 ? '' : ', '}</span> : null)}
           </label>)
         }
         <label className="info">Cancelled: <span>{globalState.applications?.filter(a => a.state == ApplicationState.cancelled).length}</span></label>
@@ -183,7 +183,7 @@ function getStatistics(applications: application[] | null) {
       [Meal.OBED]: [Meal.OBED, Meal.SNIDANE].includes(a.first_meal) ? meal : empty,
       [Meal.SNIDANE]: a.first_meal === Meal.SNIDANE ? meal : empty,
       [Meal.VECERE]: meal,
-    }; day <= a.departure; day.setDate(day.getDate() + 1), meals = day == a.departure ? {
+    }; day <= a.departure; day.setDate(day.getDate() + 1), meals = day.getTime() == a.departure.getTime()/* JS compares Date by ref */ ? {
       [Meal.OBED]: [Meal.OBED, Meal.VECERE].includes(a.last_meal) ? meal : empty,
       [Meal.SNIDANE]: meal,
       [Meal.VECERE]: a.last_meal === Meal.VECERE ? meal : empty,
