@@ -6,7 +6,7 @@ import * as Sentry from "@sentry/browser";
 const API = new CAPI();
 API.setConfig({
     apiUri: import.meta.env.VITE_API_BASE,
-    cors: import.meta.env.VITE_CORS
+    cors: import.meta.env.VITE_CORS === 'true',
 })
 
 export default class ApiLayer {

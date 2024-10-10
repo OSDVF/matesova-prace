@@ -63,7 +63,7 @@ export class SubfolderRouter extends Router {
             );
         }
 
-        if (!state.loggedIn && !import.meta.env.VITE_PERMIT_OFFLINE) {
+        if (!state.loggedIn && import.meta.env.VITE_PERMIT_OFFLINE != 'true') {
             return <div>{SubfolderRouter.handler} </div>;
         }
 
