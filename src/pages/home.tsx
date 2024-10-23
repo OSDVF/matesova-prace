@@ -15,6 +15,7 @@ import classNames from 'classnames';
 import { AppStateContext } from '../plugins/state';
 import { SubfolderRouter } from '../components/SubFolderRouter';
 import { ApplicationState, Meal, application } from '../api/api.types';
+import _ from 'lodash'
 
 if (import.meta.env.PROD) {
   Sentry.init({
@@ -74,6 +75,19 @@ export class Home extends Component<Props, State> {
         onChangeIncludePast={e => {
           globalState.includePastEvents = e.currentTarget.checked;
           globalState.init();
+        }}
+        onGenerateCSV={async () => {
+          if (globalState.applications) {
+            const exportToCsv = await import('export-to-csv')
+            const csvConfig = exportToCsv.mkConfig({
+              filename: `applications-${new Date().toLocaleString(navigator.language)}`,
+              columnHeaders: fields.map(f => f.propName),
+            })
+
+            const csvData = globalState.applications.map(a => _.mapValues(a, v => v?.toString()))
+
+            exportToCsv.download(csvConfig)(exportToCsv.generateCsv(csvConfig)(csvData))
+          }
         }}
         selectedEventID={globalState.selectedEventID}
         loginHandler={SubfolderRouter.handler}

@@ -9,15 +9,17 @@ import { Component, RefObject, createRef } from 'preact';
 
 const FILTERS_STORAGE_KEY = 'filters';
 
-export type TableField = {
+export type TableField<T = {
+    [key: string]: any;
+}> = {
     text: string;
-    propName: string;
+    propName: keyof T;
     class?: string;
     show?: boolean;
 };
 
 type Props<T> = {
-    fields: Array<TableField>;
+    fields: Array<TableField<T>>;
     data: T[],
     showIndexColumn?: boolean,
     className: string,
@@ -54,7 +56,7 @@ export class Table<RowType extends (RowWithAction<RowType> | any)> extends Compo
     constructor(props: Props<RowType>) {
         super(props);
         this.state = {
-            showActions: typeof props.defaultActions != 'undefined' ?? false,
+            showActions: typeof props.defaultActions != 'undefined' ? props.defaultActions.length > 0 : false,
             allChecked: false,
             allCheckPressed: false,
             appliedFilters: [],

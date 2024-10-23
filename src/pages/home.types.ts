@@ -1,9 +1,7 @@
 import { TableField } from "../components/Table";
 import { application } from "../api/api.types";
 
-const fieldDef: (Partial<TableField> & {
-  propName: keyof application
-})[] = [
+const fieldDef: (Partial<TableField<application>>)[] = [
     {
       text: "ID",
       show: false,
@@ -116,7 +114,7 @@ const fieldDef: (Partial<TableField> & {
     }
   ];
 
-export const fields: TableField[] = fieldDef.map((def, index) => ({
+export const fields: TableField<application>[] = fieldDef.map((def, index) => ({
   text: def.text ?? '',
   show: def.show ?? true,
   propName: def.propName!
