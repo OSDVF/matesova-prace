@@ -24,7 +24,7 @@ type State = {
 };
 
 export type TableAction<T> = {
-    onClick: (this: T | T[] | null, e: JSXInternal.TargetedMouseEvent<HTMLLIElement>) => void,
+    onClick: (selected: T | T[] | null, e: JSXInternal.TargetedMouseEvent<HTMLLIElement>) => void,
     text: string,
     icon?: string
 };
@@ -100,7 +100,7 @@ export class TableRow<T extends any> extends Component<Props<T>, State> {
                 state.toggleState ? createPortal(
                     <Menu {...state.lastClick} items={
                         props.actions?.map(val => ({
-                            onClick: e => val.onClick.apply(props.context, [e]),
+                            onClick: e => val.onClick(props.context, e),
                             text: val.text
                         }))
                     } />, document.body

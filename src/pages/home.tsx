@@ -34,7 +34,8 @@ if (import.meta.env.PROD) {
 type Props = {};
 type State = {
   errorMessage: string | null,
-  truncateCells: boolean
+  truncateCells: boolean,
+  showCancelled: boolean,
 };
 
 type MealCount = { all: number, vege: number, free: number };
@@ -47,7 +48,8 @@ export class Home extends Component<Props, State> {
 
     this.state = {
       errorMessage: null,
-      truncateCells: true
+      truncateCells: true,
+      showCancelled: true
     };
   }
   makeErrorMessage(response: receivedData<any>): string {
@@ -65,6 +67,35 @@ export class Home extends Component<Props, State> {
     }
     const days = getStatistics(globalState.applications);
     const order = { [Meal.SNIDANE]: 0, [Meal.OBED]: 1, [Meal.VECERE]: 2 }
+    const _home = this;
+
+    async function resendEmail(selected: application | application[] | null, _: any, to?: string) {
+      try {
+        if (Array.isArray(selected)) {
+          // Multiple lines were selected
+          for (let row of selected) {
+            const response = await ApiLayer.resendEmail(row.appID, to);
+            if (response.code != 200) {
+              alert(_home.makeErrorMessage(response));
+            }
+          }
+        }
+        else if (selected) {
+          const response = await ApiLayer.resendEmail(selected.appID, to);
+          if (response.code != 200) {
+            alert(_home.makeErrorMessage(response));
+          }
+        }
+        else {
+          console.log("No line was selected");
+        }
+      } catch (e) {
+        console.error(e)
+        Sentry.captureException(e);
+        alert(e);
+      }
+    }
+
     return <>
       <Legend
         events={globalState.events}
@@ -112,6 +143,7 @@ export class Home extends Component<Props, State> {
             }}>💌</button></>
           }</label>
         <label className="info">Wrap text: <input type="checkbox" checked={!state.truncateCells} onChange={() => this.setState({ truncateCells: !state.truncateCells })} /></label>
+        <label className="info">Include cancelled: <input type="checkbox" checked={!state.showCancelled} onChange={() => this.setState({ showCancelled: !state.showCancelled })} /></label>
       </div>
       {globalState.applications !== null &&
         <Table
@@ -120,7 +152,7 @@ export class Home extends Component<Props, State> {
               truncate: state.truncateCells
             })
           }
-          data={globalState.applications}
+          data={state.showCancelled ? globalState.applications : globalState.applications.filter(a => a.state !== ApplicationState.cancelled)}
           fields={fields}
           showIndexColumn={true}
           checkboxes={true}
@@ -128,19 +160,13 @@ export class Home extends Component<Props, State> {
           defaultActions={[
             {
               text: "Re-send confirmation email",
-              onClick: function () {
-                if (Array.isArray(this)) {
-                  // Multiple lines were selected
-                  for (let row of this) {
-                    ApiLayer.resendEmail(row.appID);
-                  }
-                }
-                else if (this) {
-                  ApiLayer.resendEmail(this.appID);
-                }
-                else {
-                  console.log("No line was selected");
-                }
+              onClick: resendEmail
+            },
+            {
+              text: "Send to different address",
+              onClick: (selected) => {
+                const to = prompt("Enter email address", Array.isArray(selected) ? selected[0]?.email : selected?.email);
+                if (to) resendEmail(selected, null, to);
               }
             }
           ]} />}

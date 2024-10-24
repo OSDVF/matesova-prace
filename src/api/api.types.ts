@@ -6,6 +6,8 @@ export type futureEvent = {
     registration: number | boolean
     appBegin: string
     appEnd: string
+    begin: string
+    end: string
     title: string
     slug: string
     desc: string

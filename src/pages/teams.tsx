@@ -2,7 +2,7 @@ import { Component } from "preact";
 import '../styles/teams.scss'
 import { useContext } from "preact/hooks";
 import { AppStateContext } from "../plugins/state";
-import { ApplicationState, application } from "../api/api.types";
+import { ApplicationState, application, futureEvent } from "../api/api.types";
 import { Link } from "preact-router";
 import Routes from "../plugins/routes";
 import linkState from "linkstate";
@@ -12,7 +12,6 @@ import { HTML5toTouch } from 'rdndmb-html5-to-touch'
 import ApiLayer from "../api/api";
 
 type Props = {
-
 };
 type State = {
     teams: Team[] | null,
@@ -45,9 +44,8 @@ export default class Teams extends Component<Props, State> {
         );
     }
 
-    randomize(applications: application[]) {
-        if(!this.state.includeCancelled)
-        {
+    randomize(applications: application[], event: futureEvent) {
+        if (!this.state.includeCancelled) {
             applications = applications.filter(a => a.state != ApplicationState.cancelled);
         }
         const indexesToVisit = Teams.arrayRange(0, applications.length - 1, 1);
@@ -66,24 +64,35 @@ export default class Teams extends Component<Props, State> {
                 currentTeam = teams[teams.length - 1];
             }
 
-            currentTeam.people.push({ name: pickedPerson.name + ' ' + pickedPerson.sname, friends: [] });
+            let name = createName(pickedPerson, event);
+            currentTeam.people.push({ name, friends: [] });
         }
+
         this.setState({
             teams
         });
     }
 
-    addMissing(applications: application[]) {
+    async addMissing(applications: application[], event: futureEvent) {
         let pickedTeam = 0;
         const teams = [...this.state.teams!]
+        const dirtyTeams = new Set<number>();
+        if (!teams.length) {
+            teams.push({
+                id: null,
+                name: 'Team 1',
+                people: []
+            });
+        }
         const filtered = this.state.includeCancelled ? applications :
             applications.filter(a => a.state != ApplicationState.cancelled);
+        
         for (let application of filtered) {
             //add missing people
             let found = false;
             for (let team of teams) {
                 for (let person of team.people) {
-                    if (person.name == application.name + ' ' + application.sname) {
+                    if (person.name.includes(application.name + ' ' + application.sname)) {
                         found = true;
                         break;
                     }
@@ -93,23 +102,47 @@ export default class Teams extends Component<Props, State> {
                 }
             }
             if (!found) {
-                teams[pickedTeam].people.push({ name: application.name + ' ' + application.sname, friends: [] });
+                let name = createName(application, event);
+                teams[pickedTeam].people.push({ name, friends: [] });
+                dirtyTeams.add(pickedTeam);
                 pickedTeam = (pickedTeam + 1) % this.state.teams!.length;
             }
         }
+
+        for (let team of dirtyTeams) {
+            await this.updateTeam(teams[team], event.eventID);
+        }
+
+        this.setState({
+            teams
+        });
     }
 
     addNewTeam() {
         const teams = [...this.state.teams!];
         teams.push({
             name: "New Team",
-            people: [{
-                name: "New Person",
-                friends: []
-            }],
+            people: [],
             id: null
         })
         this.setState({ teams });
+    }
+
+    async updateTeam(t: Team, eventID: number, setState = false) {
+        if (t.id == null) {
+            const result = await ApiLayer.updateTeams(eventID, null, [JSON.stringify(t.people)], [t.name]);
+            if (result.data.created.length > 0) {
+                t.id = result.data.created[0];
+                if (setState) {
+                    this.setState({
+                        teams: this.state.teams
+                    });
+                }
+            }
+        }
+        else {
+            ApiLayer.updateTeams(eventID, [t.id], [JSON.stringify(t.people)], [t.name]);
+        }
     }
     private subscribed = false;
 
@@ -137,16 +170,42 @@ export default class Teams extends Component<Props, State> {
                 })
             });
         }
+        const selectedEvent = globalState.events.find(e => e.eventID == globalState.selectedEventID)
 
         return <>
             <div class="no-print">
                 <h1>Teams</h1>
                 <Link href={Routes.link(Routes.Home)}>〈 Back to applications list</Link>
             </div>
-            {globalState.applications !== null ? <>
+            {globalState.applications !== null && selectedEvent ? <>
                 <div class="no-print">
-                    <button onClick={() => this.randomize(globalState.applications!)}>Randomize</button>
+                    <button onClick={() => this.randomize(globalState.applications!, selectedEvent)}>Randomize</button>
                     <button onClick={() => this.addNewTeam()}>+ Team</button>
+                    <button onClick={() => this.addMissing(globalState.applications!, selectedEvent)}>+ Missing</button>
+                    <button onClick={() => download(`teams-${new Date().toLocaleString()}.json`, JSON.stringify(this.state.teams, null, 2)) }>➡️ Export</button>&ensp;
+                    <label htmlFor="import">
+                        Import:
+                    </label>
+                    <input id="import" type="file" onChange={async e => {
+                        const file = e.currentTarget?.files?.[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = async e => {
+                                const text = e.target?.result as string;
+                                const teams = JSON.parse(text);
+                                for (let team of teams) {
+                                    if (!this.state.teams?.find(t => t.id == team.id)) {
+                                        team.id = null;
+                                    }
+                                    await this.updateTeam(team, globalState.selectedEventID!);
+                                }
+
+                                this.setState({ teams });
+                                alert('Imported ' + teams.length + ' teams');
+                            }
+                            reader.readAsText(file);
+                        }
+                    }} />
                     <br />
                     <label>
                         Target people count in one team:&nbsp;
@@ -166,48 +225,36 @@ export default class Teams extends Component<Props, State> {
                                     teamIndex={indexT}
                                     onNameChange={async n => {
                                         const teams = [...state.teams!];
-                                        teams[indexT].name = n
-                                        if (team.id == null) {
-                                            const result = await ApiLayer.updateTeams(globalState.selectedEventID!, null, [JSON.stringify(team.people)], [n]);
-                                            if (result.data.created.length > 0) {
-                                                teams[indexT].id = result.data.created[0];
-                                            }
-                                        }
-                                        else {
-                                            ApiLayer.updateTeams(globalState.selectedEventID!, [team.id], null, [n]);
-                                        }
+                                        const t = teams[indexT]
+                                        t.name = n
+                                        await this.updateTeam(t, globalState.selectedEventID!);
+                                        teams[indexT] = t;
+                                        
                                         this.setState({
                                             teams
                                         })
                                     }}
                                     onChange={async t => {
                                         const teams = [...state.teams!];
+                                        await this.updateTeam(t, globalState.selectedEventID!);
                                         teams[indexT] = t;
-                                        if (t.id == null) {
-                                            const result = await ApiLayer.updateTeams(globalState.selectedEventID!, null, [JSON.stringify(t.people)], [t.name]);
-                                            if (result.data.created.length > 0) {
-                                                teams[indexT].id = result.data.created[0];
-                                            }
-                                        }
-                                        else {
-                                            ApiLayer.updateTeams(globalState.selectedEventID!, [t.id], [JSON.stringify(t.people)], [t.name]);
-                                        }
+                                        
                                         this.setState({
                                             teams
                                         })
                                     }}
                                     onDrop={async (p, sourceTeam) => {
+                                        // Remove from the source team
                                         const teams = [...state.teams!];
-                                        teams[sourceTeam].people = teams[sourceTeam].people.filter(x => x.name != p.name);
-                                        if (teams[sourceTeam].id == null) {
-                                            const result = await ApiLayer.updateTeams(globalState.selectedEventID!, null, [JSON.stringify(teams[sourceTeam].people)], [teams[sourceTeam].name]);
-                                            if (result.data.created.length > 0) {
-                                                teams[indexT].id = result.data.created[0];
-                                            }
-                                        }
-                                        else {
-                                            ApiLayer.updateTeams(globalState.selectedEventID!, [teams[sourceTeam].id!], [JSON.stringify(teams[sourceTeam].people)], [teams[sourceTeam].name]);
-                                        }
+                                        const t =teams[sourceTeam]
+                                        t.people = t.people.filter(x => x.name != p.name);
+                                        await this.updateTeam(t, globalState.selectedEventID!);
+                                        teams[sourceTeam] = t;
+                                        this.setState({
+                                            teams
+                                        })
+
+                                        // Adding to the target is handled in onChange
                                     }}
                                     showDeleteButton={true}
                                     onDelete={async () => {
@@ -231,6 +278,21 @@ export default class Teams extends Component<Props, State> {
     }
 }
 
+function createName(person: application, event: futureEvent) {
+    let name = person.name + ' ' + person.sname;
+    let late = false;
+    if (person.arrival > new Date(event.begin)) {
+        name += ` ${person.arrival.getDate()}${(person.first_meal?.[0] ?? '').toLowerCase()}-`;
+        late = true;
+    }
+    const end = new Date(event.end)
+    end.setHours(0, 0, 0, 0)
+    if (person.departure < end) {
+        name += `${late ? '' : ' -'}${person.departure.getDate()}${(person.last_meal?.[0] ?? '').toLowerCase()}`;
+    }
+    return name;
+}
+
 /**
  * Returns a random integer between min (inclusive) and max (inclusive).
  * The value is no lower than min (or the next integer greater than min
@@ -242,4 +304,17 @@ function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function download(filename: string, text: string) {
+    const element = document.createElement('a')
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+    element.setAttribute('download', filename)
+
+    element.style.display = 'none'
+    document.body.appendChild(element)
+
+    element.click()
+
+    document.body.removeChild(element)
 }
